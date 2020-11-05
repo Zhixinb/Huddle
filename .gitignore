@@ -127,3 +127,26 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# built files
+server/static
+server/templates
+
+# client-side stuff
+.DS_Store
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+.sln
+
+all-*.*
+
+# e2e tests
+tests/e2e/videos
