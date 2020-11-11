@@ -1,7 +1,7 @@
 <template>
     <div>
     <v-navigation-drawer app>
-        <v-list-item v-for="s in slides" :key="s.message" link @click.stop="update_slide">
+        <v-list-item v-for="s in slides" :key="s.message" link @click.stop="update_slide(s.id)">
             <v-list-item-content>
                 <slide :message="s.message"> </slide>
             </v-list-item-content>
@@ -10,7 +10,7 @@
 
     <v-app-bar app>
 
-        <v-toolbar-title>Huddle</v-toolbar-title>
+        <v-toolbar-title>Huddle: {{ curr_slide_id }} </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-tooltip bottom>
              <template v-slot:activator="{ on, attrs }">
@@ -53,27 +53,42 @@ export default {
         return {
             curr_slide_id: 0,
             slides: [
-                { message: 'Yo' }
+                { id: 0, message: '0' }
             ]
         }
     },
     mounted() {
         this.draw();
     },
-    updated() {
-        console.log(document.body.getElementsByTagName("graph-wrapper"));
-        this.slides[this.curr_slide_id].message = document.body.getElementsByTagName("graph-wrapper");
-    },
     methods:
     {
-        update_slide() {
-            console.log(this.slides);
-            console.log(this.curr_slide_id);
+        update_slide(id) {
+            this.load_slide();
+            graph.getModel().clear();
+            this.curr_slide_id = id;
+            var xml = this.slides[this.curr_slide_id].message;
+            var doc = mxUtils.parseXml(xml);
+            var codec = new mxCodec(doc);
+            codec.decode(doc.documentElement, graph.getModel());
+            var elt = doc.documentElement.firstChild;
+            var cells = [];
+
+            while (elt != null) {
+                cells.push(codec.decode(elt));
+                elt = elt.nextSibling;
+            }
+
+            graph.addCells(cells);
+        },
+        load_slide() {
+            var encoder = new mxCodec();
+            var result = encoder.encode(graph.getModel());
+            var xml = mxUtils.getXml(result);
+            this.slides[this.curr_slide_id].message = xml;
         },
         append_slide() {
-            this.slides.push({ message: this.slides.length });
-            console.log(this.slides);
-            console.log(this.curr_slide_id);
+            this.load_slide();
+            this.slides.push({ id: this.slides.length, message: this.slides.length });
         },
         draw()
         {
@@ -136,46 +151,46 @@ export default {
                 var rubberband = new mxRubberband(graph);
 
                 var addVertex = function(icon, w, h, style) {
-                var vertex = new mxCell(null, new mxGeometry(0, 0, w, h), style);
-                vertex.setVertex(true);
+                    var vertex = new mxCell(null, new mxGeometry(0, 0, w, h), style);
+                    vertex.setVertex(true);
 
-                console.log("vertex vertex", vertex);
+                    console.log("vertex vertex", vertex);
 
-                var funct = function(graph, evt, cell, x, y) {
-                    graph.stopEditing(false);
+                    var funct = function(graph, evt, cell, x, y) {
+                        graph.stopEditing(false);
 
-                    var v = graph.getModel().cloneCell(vertex);
-                    v.geometry.x = x;
-                    v.geometry.y = y;
+                        var v = graph.getModel().cloneCell(vertex);
+                        v.geometry.x = x;
+                        v.geometry.y = y;
 
-                    graph.addCell(v);
-                    graph.setSelectionCell(v);
-                };
+                        graph.addCell(v);
+                        graph.setSelectionCell(v);
+                    };
 
-                // Creates the image which is used as the drag icon (preview)
-                var img = toolbar.addMode(null, icon, function(evt, cell) {
-                    var pt = this.graph.getPointForEvent(evt);
-                    funct(graph, evt, cell, pt.x, pt.y);
-                });
+                    // Creates the image which is used as the drag icon (preview)
+                    var img = toolbar.addMode(null, icon, function(evt, cell) {
+                        var pt = this.graph.getPointForEvent(evt);
+                        funct(graph, evt, cell, pt.x, pt.y);
+                    });
 
-                mxEvent.addListener(img, "mousedown", function(evt) {
-                    // do nothing
-                });
+                    mxEvent.addListener(img, "mousedown", function(evt) {
+                        // do nothing
+                    });
 
-                mxEvent.addListener(img, "mousedown", function(evt) {
-                    if (img.enabled == false) {
-                    mxEvent.consume(evt);
-                    }
-                });
+                    mxEvent.addListener(img, "mousedown", function(evt) {
+                        if (img.enabled == false) {
+                        mxEvent.consume(evt);
+                        }
+                    });
 
-                mxUtils.makeDraggable(img, graph, funct);
-                //img.enabled = true;
+                    mxUtils.makeDraggable(img, graph, funct);
+                    //img.enabled = true;
 
-                graph.getSelectionModel().addListener(mxEvent.CHANGE, function() {
-                    var tmp = graph.isSelectionEmpty();
-                    mxUtils.setOpacity(img, tmp ? 100 : 20);
-                    img.enabled = tmp;
-                });
+                    graph.getSelectionModel().addListener(mxEvent.CHANGE, function() {
+                        var tmp = graph.isSelectionEmpty();
+                        mxUtils.setOpacity(img, tmp ? 100 : 20);
+                        img.enabled = tmp;
+                    });
                 };
 
                 addVertex("https://jgraph.github.io/mxgraph/javascript/examples/editors/images/rounded.gif", 100, 40, "shape=rounded");
@@ -188,7 +203,6 @@ export default {
 
         drop(ev) {
             ev.preventDefault();
-            
             var data = ev.dataTransfer.getData("text");
             var parent = graph.getDefaultParent();
             graph.getModel().beginUpdate();
@@ -199,6 +213,7 @@ export default {
 
             try {
                 var v1 = graph.insertVertex(parent, null, data, targetX, targetY, 300, 30);
+                this.load_slide();
             } finally {
                 graph.getModel().endUpdate();
             }
