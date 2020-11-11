@@ -95,15 +95,6 @@ export default {
             if (!mxClient.isBrowserSupported()) {
                 mxUtils.error("Browser is not supported!", 200, false);
             } else {
-                mxPanningHandler.prototype.isPanningEnabled = function(value) {
-                    return false;
-                };
-                mxConnectionHandler.prototype.connectImage = new mxImage(
-                "images/connector.gif",
-                16,
-                16
-                );
-
                 // new toolbar without event processing
                 var toolbar = new mxToolbar(document.getElementById("text_box"));
                 toolbar.enabled = false;
@@ -120,24 +111,7 @@ export default {
                 container.style.background =
                 'url("https://jgraph.github.io/mxgraph/javascript/examples/editors/images/grid.gif")';
 
-                // add drag/drop events to grid
-                container.addEventListener("dragover", function(event) {
-                    event.preventDefault();
-                });
-                
-                // add drag/drop events to grid
-                container.addEventListener("drop", function(event) {
-                    drop(event);
-                });
-
                 document.getElementById("graph-wrapper").appendChild(container);
-
-                // workaround for Internet Explorer ignoring certain styles
-                if (mxClient.IS_QUIRKS) {
-                    document.body.style.overflow = "hidden";
-                    new mxDivResizer(tbContainer);
-                    new mxDivResizer(container);
-                }
 
                 // creates the model and the graph inside the container
                 var model = new mxGraphModel();
@@ -146,15 +120,9 @@ export default {
                 graph.setConnectable(false);
                 graph.setMultigraph(false);
 
-                // stops editing on enter or escape keypress
-                var keyHandler = new mxKeyHandler(graph);
-                var rubberband = new mxRubberband(graph);
-
                 var addVertex = function(icon, w, h, style) {
                     var vertex = new mxCell(null, new mxGeometry(0, 0, w, h), style);
                     vertex.setVertex(true);
-
-                    console.log("vertex vertex", vertex);
 
                     var funct = function(graph, evt, cell, x, y) {
                         graph.stopEditing(false);
@@ -174,17 +142,12 @@ export default {
                     });
 
                     mxEvent.addListener(img, "mousedown", function(evt) {
-                        // do nothing
-                    });
-
-                    mxEvent.addListener(img, "mousedown", function(evt) {
                         if (img.enabled == false) {
                         mxEvent.consume(evt);
                         }
                     });
 
                     mxUtils.makeDraggable(img, graph, funct);
-                    //img.enabled = true;
 
                     graph.getSelectionModel().addListener(mxEvent.CHANGE, function() {
                         var tmp = graph.isSelectionEmpty();
@@ -195,29 +158,7 @@ export default {
 
                 addVertex("https://jgraph.github.io/mxgraph/javascript/examples/editors/images/rounded.gif", 100, 40, "shape=rounded");
             }
-        },
-        
-        drag(ev) {
-            ev.dataTransfer.setData("text", ev.target.innerText);
-        },
-
-        drop(ev) {
-            ev.preventDefault();
-            var data = ev.dataTransfer.getData("text");
-            var parent = graph.getDefaultParent();
-            graph.getModel().beginUpdate();
-            
-                var gridRect = $('#grid')[0].getBoundingClientRect();
-                var targetX = ev.x - gridRect.x;
-                var targetY = ev.y - gridRect.y;
-
-            try {
-                var v1 = graph.insertVertex(parent, null, data, targetX, targetY, 300, 30);
-                this.load_slide();
-            } finally {
-                graph.getModel().endUpdate();
-            }
-        }   
+        }
     },
     components: {
         Slide
