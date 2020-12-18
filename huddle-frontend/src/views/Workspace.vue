@@ -15,6 +15,14 @@
         <v-tooltip bottom>
              <template v-slot:activator="{ on, attrs }">
                 <v-btn icon v-bind="attrs" v-on="on" id="textbox" draggable @dragstart="onDragStart($event)" @dragend="onDragEnd()">
+                    <v-icon>mdi-graph</v-icon>
+                </v-btn>
+             </template>
+             <span>New Graph</span>
+        </v-tooltip>
+        <v-tooltip bottom>
+             <template v-slot:activator="{ on, attrs }">
+                <v-btn icon v-bind="attrs" v-on="on" id="textbox" draggable @dragstart="onDragStart($event)" @dragend="onDragEnd()">
                 </v-btn>
              </template>
              <span>New Textbox</span>
