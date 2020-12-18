@@ -15,7 +15,7 @@
 
 <script>
 
-import {mapState} from 'vuex'
+import {mapState, mapMutations} from 'vuex'
 import textbox from '@/components/widgets/textbox'
 
 export default {
@@ -25,12 +25,29 @@ export default {
   },
   data: () => ({
     fields: [],
-    count: 0
+    count: 0,
+    curr_room_id: ''
   }),
+  beforeMount () {
+    const params = {
+      uid: this.$store.getters.uid,
+      room: this.$route.params.room
+    }
+    this.set_room(this.room_id)
+    this.$socket.emit('join', params)
+  },
   computed: {
     ...mapState(['workspace'])
   },
+  beforeDestroy () {
+    const params = {
+      uid: this.$store.getters.uid,
+      room: this.workspace.workspace_id
+    }
+    this.$socket.emit('leave', params)
+  },
   methods: {
+    ...mapMutations(['set_room']),
     addFormElement (type) {
       this.fields.push({
         'type': type,

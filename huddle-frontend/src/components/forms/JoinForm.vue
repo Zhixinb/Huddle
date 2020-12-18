@@ -34,8 +34,6 @@
 
 <script>
 
-import {mapMutations} from 'vuex'
-
 export default {
   name: 'join-form',
   data: () => ({
@@ -65,19 +63,10 @@ export default {
     }
   },
   methods: {
-    ...mapMutations(['set_room']),
+    // ...mapMutations(['set_room']),
     join_room () {
       this.$refs.form.validate()
       if (this.valid_form) {
-        console.log('gonna join a room' + this.curr_room_id)
-
-        const params = {
-          sid: this.$store.getters.sid,
-          room: this.room_id
-        }
-        console.log('params:' + JSON.stringify(params))
-        this.set_room(this.room_id)
-        this.$socket.emit('join', params)
         this.$router.push({ name: 'Workspace', params: { room: this.room_id } })
       }
     }

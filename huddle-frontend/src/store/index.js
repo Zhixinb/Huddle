@@ -8,6 +8,7 @@ export default new Vuex.Store({
     disconnected: false,
     disconnect_delay: null,
 
+    uid: null,
     sid: null,
     workspace_list: [],
     workspace: {},
@@ -19,7 +20,14 @@ export default new Vuex.Store({
       if (state.sid) {
         return state.sid
       } else {
-        return 'Unknown User'
+        return 'Unknown sid'
+      }
+    },
+    uid (state) {
+      if (state.uid) {
+        return state.uid
+      } else {
+        return 'Unknown uid'
       }
     }
   },
@@ -29,6 +37,9 @@ export default new Vuex.Store({
     },
     set_sid (state, payload) {
       state.sid = payload
+    },
+    set_uid (state, payload) {
+      state.uid = payload
     },
     set_workspace_list (state, workspaceList) {
       state.workspace_list = workspaceList
@@ -45,9 +56,6 @@ export default new Vuex.Store({
     reset_error (state) {
       state.room = null
       state.error = null
-    },
-    reset_room (state) {
-      state.workspace = {}
     }
   },
   actions: {

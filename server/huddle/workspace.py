@@ -7,6 +7,11 @@ import string
 import os
 from huddle import users
 
+class Permission:
+    OWNER = 0
+    CAN_EDIT = 1
+    CAN_VIEW = 2
+
 class Workspace(object):
     workspace_ids = set()
 
@@ -18,6 +23,7 @@ class Workspace(object):
         self.date_created = datetime.now()
         self.date_modified = self.date_created
         self.users = users.Users()
+        self.user_perms = {}
 
         # gererate board
         self.generate_workspace(host)
@@ -28,12 +34,13 @@ class Workspace(object):
             "workspace_id": self.workspace_id,
             "users": self.users.as_dict(),
             "date_created": str(self.date_created),
-            "date_modified": str(self.date_modified)
+            "date_modified": str(self.date_modified),
+            "user_perms" : self.user_perms
         }
 
     def generate_workspace(self, host):
         # TODO: Initialize workspace
-        self.add_user(host, {"credential" : "host"})
+        self.user_perms[host] =  Permission.OWNER
         return
 
     def add_user(self, sid, param):
@@ -44,8 +51,8 @@ class Workspace(object):
         """Remove username to user array"""
         self.users.remove(sid)
 
-    def has_user(self, sid):
-        return self.users.has_user(sid)
+    def has_access(self, sid):
+        return sid in self.user_perms
 
     @classmethod
     def generate_workspace_id(cls):
