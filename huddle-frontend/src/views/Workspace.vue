@@ -54,11 +54,11 @@
                 <fullscreen ref="fullscreen" @change="fullscreenChange" background=#FFF>
                     <textbox v-if="dragged === 'textbox'" :width="w*0.7" :height="h*0.7" :x="x" :y="y" />
                     <div v-for="c in slides[curr_slide_id].components" :key="c.c_id">
-                        <div v-if="c.type == 'circle'">
-                            <MyCircle :x="c.x" :y="c.y" :r="c.y"/>
+                        <div v-if="c.type === 'circle'">
+                            <MyCircle :c_id="c.c_id" :x="c.x" :y="c.y" :r="c.r" @update_radius="update_radius"/>
                         </div>
-                        <div v-else-if="c.type == 'rect'">
-                            <MyRect :x="c.x" :y="c.y" :w="c.w" :l="c.l"/>
+                        <div v-else-if="c.type === 'rect'">
+                            <MyRect :c_id="c.c_id" :x="c.x" :y="c.y" :w="c.w" :l="c.l" @update_dimen="update_dimen"/>
                         </div>
                     </div>
                 </fullscreen>
@@ -125,16 +125,6 @@ export default {
     methods:
     {
         ...mapMutations(['set_room']),
-        parse_slide (id) {
-            var curr_slide = this.slides[id];
-            var components = curr_slide.components;
-            for (var i = 0; i < components.length; i++) {
-                console.log(components[i]);
-            }
-        },
-        clear () {
-            this.components[0].data.text_content = 'qqqqqqq'
-        },
         update_slide(id) {
             this.curr_slide_id = id;
         },
@@ -145,19 +135,31 @@ export default {
         },
         new_circle(event) {
             const pos = document.getElementById('graph-wrapper').getBoundingClientRect();
-            var x = event.x - pos.x;
-            var y = event.y - pos.y;
-            var c = { c_id: this.next_c_id, type: 'circle', x: x, y: y, r: 25 };
-            this.slides[this.curr_slide_id].components.push(c);
-            this.next_c_id += 1;
+            if (event.x <= pos.right && event.y <= pos.bottom && event.x >= pos.left && event.y >= pos.top) {
+                var x = event.x - pos.x;
+                var y = event.y - pos.y;
+                var c = { c_id: this.next_c_id, type: 'circle', x: x, y: y, r: 25 };
+                this.slides[this.curr_slide_id].components.push(c);
+                this.next_c_id += 1;
+            }
         },
         new_rect(event) {
             const pos = document.getElementById('graph-wrapper').getBoundingClientRect();
-            var x = event.x - pos.x;
-            var y = event.y - pos.y;
-            var c = { c_id: this.next_c_id, type: 'rect', x: x, y: y, w: 50, l: 50 };
-            this.slides[this.curr_slide_id].components.push(c);
-            this.next_c_id += 1;
+            if (event.x <= pos.right && event.y <= pos.bottom && event.x >= pos.left && event.y >= pos.top) {
+                var x = event.x - pos.x;
+                var y = event.y - pos.y;
+                var c = { c_id: this.next_c_id, type: 'rect', x: x, y: y, w: 50, l: 50 };
+                this.slides[this.curr_slide_id].components.push(c);
+                this.next_c_id += 1;
+            }
+        },
+        update_radius: function (value) {
+            this.slides[this.curr_slide_id].components.find(x => x.c_id === value.c_id).r = value.r;
+        },
+        update_dimen: function (value) {
+            var obj = this.slides[this.curr_slide_id].components.find(x => x.c_id === value.c_id);
+            obj.w = value.w;
+            obj.l = value.l;
         },
         toggle() 
         {

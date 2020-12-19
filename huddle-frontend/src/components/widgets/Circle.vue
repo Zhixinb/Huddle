@@ -6,7 +6,7 @@
         </svg>
     </div>
     <div class="absolute" :style="{'top': y - 25 + 'px', 'left': x + 150 + 'px'}">
-        <v-slider dense v-model="radius" max="50" min="1" vertical></v-slider>
+        <v-slider dense v-model="radius" max="50" min="1" vertical @input="emit_radius"></v-slider>
     </div>
 </div>
 </template>
@@ -15,8 +15,11 @@
 export default {
     name: 'Circle',
     props: {
+        c_id: {
+            type: Number
+        },
         x: {
-            type: Number,
+            type: Number
         },
         y: {
             type: Number
@@ -24,6 +27,11 @@ export default {
         r: {
             type: Number
         },
+    },
+    methods: {
+        emit_radius() {
+            this.$emit('update_radius', { c_id: this.c_id, r: this.radius })
+        }
     },
     data() {
         return { radius: this.r }

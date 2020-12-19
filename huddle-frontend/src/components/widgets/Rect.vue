@@ -6,10 +6,10 @@
         </svg>
     </div>
     <div class="absolute" :style="{'top': y - 25 + 'px', 'left': x + 150 + 'px'}">
-        <v-slider dense v-model="length" max="100" min="1" vertical></v-slider>
+        <v-slider dense v-model="length" max="100" min="1" vertical @input="emit_dimen"></v-slider>
     </div>
     <div class="absolute slider-length" :style="{'top': y -65 + 'px', 'left': x - 45 + 'px'}">
-        <v-slider dense v-model="width" max="100" min="1"></v-slider>
+        <v-slider dense v-model="width" max="100" min="1" @input="emit_dimen"></v-slider>
     </div>
 </div>
 </template>
@@ -18,6 +18,9 @@
 export default {
     name: 'Rect',
     props: {
+        c_id: {
+            type: Number
+        },
         x: {
             type: Number,
         },
@@ -30,6 +33,11 @@ export default {
         l: {
             type: Number
         },
+    },
+    methods: {
+        emit_dimen() {
+            this.$emit('update_dimen', { c_id: this.c_id, w: this.width, l: this.length })
+        }
     },
     data() {
         return { 
