@@ -31,6 +31,7 @@
         <v-tooltip bottom>
              <template v-slot:activator="{ on, attrs }">
                 <v-btn icon v-bind="attrs" v-on="on" id="textbox" draggable @dragstart="onDragStart($event)" @dragend="onDragEnd()">
+                    <v-icon>mdi-textbox</v-icon>
                 </v-btn>
              </template>
              <span>New Textbox</span>
@@ -139,6 +140,7 @@ export default {
         },
         append_slide() {
             this.slides.push({ id: this.next_s_id, components: [] });
+            this.curr_slide_id = this.next_s_id;
             this.next_s_id += 1;
         },
         new_circle(event) {
