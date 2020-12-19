@@ -3,41 +3,38 @@
     <v-card>
       <div>
           <h3>Workspace ID : {{workspace}}</h3>
-          <button type="button" v-on:click="addFormElement('textbox')">Add Textbox</button>
-          <button type="button" v-on:click="clear()">Clear Textbox</button>
-      </div>
-      <div>
-        <component v-for="field in fields" v-bind:is="field.type" :key="field.id"></component>
+          <h2>Role: {{role}} </h2>
+          <permission-modal/>
+
       </div>
     </v-card>
   </v-fade-transition>
 </template>
 
 <script>
-
 import {mapState, mapMutations} from 'vuex'
-import textbox from '@/components/widgets/textbox'
+import PermissionModal from '@/components/app/PermissionModal'
 
 export default {
   name: 'Workspace',
   components: {
-    textbox
+    PermissionModal
   },
   data: () => ({
-    fields: [],
-    count: 0,
     curr_room_id: ''
   }),
   beforeMount () {
     const params = {
       uid: this.$store.getters.uid,
-      room: this.$route.params.room
+      room: this.$store.getters.room,
+      sid: this.$store.getters.sid
     }
-    this.set_room(this.room_id)
     this.$socket.emit('join', params)
+    this.$socket.emit('get_share_state', params)
   },
   computed: {
-    ...mapState(['workspace'])
+    ...mapState(['workspace']),
+    ...mapState('ws', ['role'])
   },
   beforeDestroy () {
     const params = {
@@ -47,16 +44,7 @@ export default {
     this.$socket.emit('leave', params)
   },
   methods: {
-    ...mapMutations(['set_room']),
-    addFormElement (type) {
-      this.fields.push({
-        'type': type,
-        id: this.count++
-      })
-    },
-    clear () {
-      this.components[0].data.text_content = 'qqqqqqq'
-    }
+    ...mapMutations(['set_room'])
   }
 }
 </script>
