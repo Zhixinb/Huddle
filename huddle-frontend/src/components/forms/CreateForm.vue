@@ -13,7 +13,7 @@
             large
             type="submit"
             id="create-btn"
-          >create</v-btn>
+          >New Workspace</v-btn>
         </v-card-actions>
       </v-card>
     </v-form>
@@ -29,7 +29,7 @@ export default {
       this.$refs.form.validate()
 
       const params = {
-        sid: this.$store.getters.sid
+        uid: this.$store.getters.uid
       }
 
       this.$socket.emit('create', params)
