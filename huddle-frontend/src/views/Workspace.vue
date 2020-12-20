@@ -102,7 +102,7 @@ export default {
     }),
     created() {
         window.addEventListener("resize", this.screenChange);
-        this.parse_slide(0);
+        // this.parse_slide(0);
     },
     beforeMount () {
         const params = {
