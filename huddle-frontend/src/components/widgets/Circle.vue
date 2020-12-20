@@ -18,6 +18,9 @@ export default {
         c_id: {
             type: Number
         },
+        s_id: {
+            type: Number
+        },
         x: {
             type: Number
         },
@@ -27,10 +30,13 @@ export default {
         r: {
             type: Number
         },
+        type_name: {
+            type: String
+        },
     },
     methods: {
         emit_radius() {
-            this.$emit('update_radius', { c_id: this.c_id, r: this.radius })
+            this.$emit('update_radius', { c_id: this.c_id, s_id: this.s_id, r: this.radius })
         }
     },
     data() {

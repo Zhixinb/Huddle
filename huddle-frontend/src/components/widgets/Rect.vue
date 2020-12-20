@@ -21,6 +21,9 @@ export default {
         c_id: {
             type: Number
         },
+        s_id: {
+            type: Number
+        },
         x: {
             type: Number,
         },
@@ -33,10 +36,13 @@ export default {
         l: {
             type: Number
         },
+        type_name: {
+            type: String
+        },
     },
     methods: {
         emit_dimen() {
-            this.$emit('update_dimen', { c_id: this.c_id, w: this.width, l: this.length })
+            this.$emit('update_dimen', { c_id: this.c_id, s_id: this.s_id, w: this.width, l: this.length })
         }
     },
     data() {

@@ -13,7 +13,10 @@ export default {
     props: {
         x: Number,
         y: Number,
-        text: String
+        text: String,
+        type_name: {
+            type: String
+        }
     }
 }
 </script>

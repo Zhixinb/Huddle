@@ -5,27 +5,30 @@ import random
 import math
 import string
 import os
+from enum import IntEnum
 from huddle import users
 
-class Permission:
+class Permission(IntEnum):
     OWNER = 0
-    CAN_EDIT = 1
-    CAN_VIEW = 2
+    EDITOR = 1
+    VIEWER = 2
+    PERM_DENIED = 3
 
 class Workspace(object):
     workspace_ids = set()
 
     # pylint: disable=too-many-instance-attributes
     """Object for tracking game stats"""
-    def __init__(self, host, permission="host-only"):
-        self.permission = permission
-        self.workspace_id = self.generate_workspace_id()
+    def __init__(self, host, permission=Permission.OWNER):
         self.date_created = datetime.now()
         self.date_modified = self.date_created
+
+        self.workspace_id = self.generate_workspace_id()
         self.users = users.Users()
         self.user_perms = {}
+        # self.global_share_state = Permission.PERM_DENIED
 
-        # gererate board
+        # initialize workspace
         self.generate_workspace(host)
 
     def to_json(self):
@@ -35,13 +38,13 @@ class Workspace(object):
             "users": self.users.as_dict(),
             "date_created": str(self.date_created),
             "date_modified": str(self.date_modified),
-            "user_perms" : self.user_perms
+            "user_perms" : self.user_perms,
+            "global_share_state": self.global_share_state
         }
 
     def generate_workspace(self, host):
-        # TODO: Initialize workspace
         self.user_perms[host] =  Permission.OWNER
-        return
+        self.global_share_state = Permission.PERM_DENIED # SHOULD BE DENIED, testing
 
     def add_user(self, sid, param):
         """Add username to user array"""
@@ -53,6 +56,19 @@ class Workspace(object):
 
     def has_access(self, sid):
         return sid in self.user_perms
+
+    def get_user_perms(self):
+        return [{"uid": uid, "perm": perm} for (uid, perm) in self.user_perms.items()]
+    
+    def get_user_perm(self, uid):
+        if (uid in self.user_perms):
+            return self.user_perms[uid]
+        else:
+            return self.global_share_state
+    
+    def get_role(self, uid):
+        perm = self.get_user_perm(uid)
+        return Permission(perm).name
 
     @classmethod
     def generate_workspace_id(cls):
@@ -66,6 +82,10 @@ class Workspace(object):
             return generate_workspace_id()
         else:
             return candidate_id
+
+    @classmethod
+    def getPermissionDict(cls):
+        return {permission.name:permission.value for permission in Permission}
 
     def regenerate_id(self):
         self.workspace_id = self.generate_workspace_id()
