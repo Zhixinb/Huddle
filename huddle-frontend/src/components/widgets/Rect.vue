@@ -16,7 +16,7 @@
 
 <script>
 export default {
-    name: 'Rect',
+    name: 'RectWidget',
     props: {
         c_id: {
             type: Number

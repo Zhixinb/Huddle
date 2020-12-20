@@ -14,7 +14,7 @@
         <v-spacer></v-spacer>
         <v-tooltip bottom>
              <template v-slot:activator="{ on, attrs }">
-                <v-btn icon v-bind="attrs" v-on="on" draggable @dragend="new_rect($event)">
+                <v-btn icon v-bind="attrs" v-on="on" id="rectangle" draggable v-on:dragstart="dragStart" v-on:dragend="dragEnd">
                     <v-icon>mdi-square</v-icon>
                 </v-btn>
              </template>
@@ -22,7 +22,7 @@
         </v-tooltip>
         <v-tooltip bottom>
              <template v-slot:activator="{ on, attrs }">
-                <v-btn icon v-bind="attrs" v-on="on" draggable @dragend="new_circle($event)">
+                <v-btn icon v-bind="attrs" v-on="on" id="circle" draggable v-on:dragstart="dragStart" v-on:dragend="dragEnd">
                     <v-icon>mdi-circle</v-icon>
                 </v-btn>
              </template>
@@ -30,7 +30,7 @@
         </v-tooltip>
         <v-tooltip bottom>
              <template v-slot:activator="{ on, attrs }">
-                <v-btn icon v-bind="attrs" v-on="on" id="textbox" draggable @dragstart="onDragStart($event)" @dragend="onDragEnd()">
+                <v-btn icon v-bind="attrs" v-on="on" id="textbox" draggable v-on:dragstart="dragStart" v-on:dragend="dragEnd">
                     <v-icon>mdi-textbox</v-icon>
                 </v-btn>
              </template>
@@ -49,16 +49,26 @@
 
     <div class="pa-5">
         <v-fade-transition appear>
-            <v-card id ="graph-wrapper" :width="w*0.7" :height="h*0.7" @dragover="onHover($event)" 
-            @drop="onDrop($event)">
+            <v-card id ="graph-wrapper" :width="w" :height="h" v-on:dragover="dragOver">
                 <fullscreen ref="fullscreen" @change="fullscreenChange" background=#FFF>
-                    <textbox v-if="dragged === 'textbox'" :width="w*0.7" :height="h*0.7" :x="x" :y="y" />
+                    <Textbox v-if="preview !== null && preview.constructor.name == 'Textbox'" 
+                        :x="w * preview.x" :y="h * preview.y" :text="preview.text"/>
+                    <MyCircle v-else-if="preview !== null && preview.constructor.name == 'Circle'" 
+                        :x="w * preview.x" :y="h * preview.y" :r="preview.r"/>
+                    <MyRect v-else-if="preview !== null && preview.constructor.name == 'Rectangle'" 
+                        :x="w * preview.x" :y="h * preview.y" :w="preview.w" :l="preview.l"/>
                     <div v-for="c in slides[curr_slide_id].components" :key="c.c_id">
-                        <div v-if="c.type === 'circle'">
-                            <MyCircle :c_id="c.c_id" :x="c.x" :y="c.y" :r="c.r" @update_radius="update_radius"/>
+                        <div v-if="c.constructor.name === 'Textbox'" draggable 
+                            v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd">
+                            <Textbox :c_id="c.c_id" :x="w * c.x" :y="h * c.y" :text="c.text"/>
                         </div>
-                        <div v-else-if="c.type === 'rect'">
-                            <MyRect :c_id="c.c_id" :x="c.x" :y="c.y" :w="c.w" :l="c.l" @update_dimen="update_dimen"/>
+                        <div v-else-if="c.constructor.name === 'Circle'" draggable 
+                            v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd">
+                            <MyCircle :c_id="c.c_id" :x="w * c.x" :y="h * c.y" :r="c.r" @update_radius="update_radius"/>
+                        </div>
+                        <div v-else-if="c.constructor.name == 'Rectangle'" draggable 
+                            v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd">
+                            <MyRect :c_id="c.c_id" :x="w * c.x" :y="h * c.y" :w="c.w" :l="c.l" @update_dimen="update_dimen"/>
                         </div>
                     </div>
                 </fullscreen>
@@ -74,9 +84,11 @@ import Slide from '@/components/app/Slide';
 import {mapState, mapMutations} from 'vuex'
 import fullscreen from 'vue-fullscreen';
 import Vue from 'vue';
-import Textbox from '../components/app/Textbox.vue';
+import Textbox from '../components/widgets/Textbox.vue';
 import Circle from '../components/widgets/Circle.vue';
 import Rect from '../components/widgets/Rect.vue';
+import {Widget, Circle as CircleWidget, Rectangle as RectWidget, Textbox as TextWidget} from '../models/widget.js';
+
 Vue.use(fullscreen);
 
 export default {
@@ -94,15 +106,12 @@ export default {
         curr_room_id: '',
 
         // Dragging elements state
-        dragged: '',
-        x: 0,
-        y: 0,
-        w: window.innerWidth,
-        h: window.innerHeight
+        preview: null,
+        w: screen.width * 0.7,
+        h: screen.height * 0.7
+        
     }),
     created() {
-        window.addEventListener("resize", this.screenChange);
-        this.parse_slide(0);
     },
     beforeMount () {
         const params = {
@@ -118,9 +127,6 @@ export default {
             room: this.workspace.workspace_id
         }
         this.$socket.emit('leave', params)
-    },
-    destroyed() {
-        window.removeEventListener("resize", this.screenChange);
     },
     methods:
     {
@@ -138,8 +144,8 @@ export default {
             if (event.x <= pos.right && event.y <= pos.bottom && event.x >= pos.left && event.y >= pos.top) {
                 var x = event.x - pos.x;
                 var y = event.y - pos.y;
-                var c = { c_id: this.next_c_id, type: 'circle', x: x, y: y, r: 25 };
-                this.slides[this.curr_slide_id].components.push(c);
+                this.slides[this.curr_slide_id].components.push(new CircleWidget(this.next_c_id, this.curr_slide_id, 
+                    x, y, 25));
                 this.next_c_id += 1;
             }
         },
@@ -148,8 +154,8 @@ export default {
             if (event.x <= pos.right && event.y <= pos.bottom && event.x >= pos.left && event.y >= pos.top) {
                 var x = event.x - pos.x;
                 var y = event.y - pos.y;
-                var c = { c_id: this.next_c_id, type: 'rect', x: x, y: y, w: 50, l: 50 };
-                this.slides[this.curr_slide_id].components.push(c);
+                this.slides[this.curr_slide_id].components.push(new RectWidget(this.next_c_id, this.curr_slide_id, 
+                    x, y, 50, 50));
                 this.next_c_id += 1;
             }
         },
@@ -165,29 +171,59 @@ export default {
         {
             this.$refs['fullscreen'].toggle()
         },
-        fullscreenChange(fullscreen) {
-            this.fullscreen = fullscreen
+        fullscreenChange(full) {
+            if (full) {
+                this.w = screen.width;
+                this.h = screen.height;
+            } else {
+                this.w = screen.width * 0.7;
+                this.h = screen.height * 0.7;
+            }
+            this.fullscreen = full
         },
-        onDragStart(event) {
+        dragStart:function(event) {
             event.dataTransfer.setDragImage(document.createElement('div'), 0, 0);
-            this.dragged = event.target.id;
-        },
-        onDragEnd() {
-            this.dragged = '';
-        },
-        onHover(event) {
-            event.preventDefault();
-            const pos = document.getElementById('graph-wrapper').getBoundingClientRect();
-            if (event.x <= pos.right && event.y <= pos.bottom && event.x >= pos.left && event.y >= pos.top) {
-                this.x = event.x - pos.x;
-                this.y = event.y - pos.y;
+            const widget = event.target.id;
+            if (widget === 'textbox') {
+                this.preview = new TextWidget(this.next_c_id, this.curr_slide_id, 0, 0, "Text");
+            } else if (widget === 'circle') {
+                this.preview = new CircleWidget(this.next_c_id, this.curr_slide_id, 0, 0, 25)
+            } else if (widget === 'rectangle') {
+                this.preview = new RectWidget(this.next_c_id, this.curr_slide_id, 0, 0, 50, 50)
+            } else {
+                this.preview = null;
             }
         },
-        onDrop (event) {
+        dragOver:function(event) {
+            event.preventDefault();
+            if (this.fullscreen) {
+                if (event.x >= 0 && event.x <= this.w && event.y >= 0 && event.y <= this.h) {
+                    this.preview.x = event.x / this.w;
+                    this.preview.y = event.y / this.h;
+                }
+            } else {
+                const pos = document.getElementById('graph-wrapper').getBoundingClientRect();
+                if (event.x <= pos.right && event.y <= pos.bottom && event.x >= pos.left && event.y >= pos.top) {
+                    this.preview.x = (event.x - pos.x) / this.w;
+                    this.preview.y = (event.y - pos.y) / this.h;
+                }
+            }
         },
-        screenChange(event) {
-            this.w = window.innerWidth;
-            this.h = window.innerHeight;
+        dragEnd:function(event) {
+            if (this.preview != null) {
+                this.slides[this.curr_slide_id].components.push(this.preview);
+                this.next_c_id += 1;
+                console.log("Signal: New Widget Created")
+            }
+            this.preview = null;
+        },
+        widgetDragStart:function(event, widget) {
+            event.dataTransfer.setDragImage(document.createElement('div'), 0, 0);
+            this.preview = widget;
+        },
+        widgetDragEnd:function(event) {
+            this.preview = null;
+            console.log("Signal: Widget moved")
         }
     },
     components: {
