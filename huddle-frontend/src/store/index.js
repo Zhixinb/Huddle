@@ -12,6 +12,7 @@ export default new Vuex.Store({
     sid: null,
     workspace_list: [],
     workspace: {},
+    items: [],
     room: '',
     error: null
   },

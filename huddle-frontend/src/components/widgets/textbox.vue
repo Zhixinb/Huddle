@@ -19,7 +19,14 @@ export default {
     onChangeHandler () {
     // emit signal to server
       console.log('text content:' + this.text_content)
+      this.$emit('changeInText', this.text_content)
     //   this.text_content = 'bbbbbbbbbbbbb'
+    },
+    onClear (data) {
+      this.text_content = data
+    },
+    clear() {
+      this.text_content = 'bbbb'
     }
   }
 }
