@@ -13,7 +13,7 @@
 
 <script>
 export default {
-    name: 'Circle',
+    name: 'CircleWidget',
     props: {
         c_id: {
             type: Number
