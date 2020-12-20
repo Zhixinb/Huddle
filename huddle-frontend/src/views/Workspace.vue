@@ -139,26 +139,6 @@ export default {
             this.curr_slide_id = this.next_s_id;
             this.next_s_id += 1;
         },
-        new_circle(event) {
-            const pos = document.getElementById('graph-wrapper').getBoundingClientRect();
-            if (event.x <= pos.right && event.y <= pos.bottom && event.x >= pos.left && event.y >= pos.top) {
-                var x = event.x - pos.x;
-                var y = event.y - pos.y;
-                this.slides[this.curr_slide_id].components.push(new CircleWidget(this.next_c_id, this.curr_slide_id, 
-                    x, y, 25));
-                this.next_c_id += 1;
-            }
-        },
-        new_rect(event) {
-            const pos = document.getElementById('graph-wrapper').getBoundingClientRect();
-            if (event.x <= pos.right && event.y <= pos.bottom && event.x >= pos.left && event.y >= pos.top) {
-                var x = event.x - pos.x;
-                var y = event.y - pos.y;
-                this.slides[this.curr_slide_id].components.push(new RectWidget(this.next_c_id, this.curr_slide_id, 
-                    x, y, 50, 50));
-                this.next_c_id += 1;
-            }
-        },
         update_radius: function (value) {
             this.slides[this.curr_slide_id].components.find(x => x.c_id === value.c_id).r = value.r;
         },
