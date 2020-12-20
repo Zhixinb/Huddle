@@ -8,6 +8,10 @@ function Widget(c_id, s_id, x, y) {
 Widget.prototype.slots = [
 ]
 
+Widget.prototype.copy = function() {
+    return new Widget(this.c_id, this.s_id, this.x, this.y)
+}
+
 function Circle(c_id, s_id, x, y, r) {
     Widget.call(this, c_id, s_id, x, y);
     this.r = r;
@@ -15,6 +19,9 @@ function Circle(c_id, s_id, x, y, r) {
 
 Circle.prototype = Object.create(Widget.prototype)
 Circle.prototype.constructor = Circle;
+Circle.prototype.copy = function() {
+    return new Circle(this.c_id, this.s_id, this.x, this.y, this.r)
+}
 
 function Rectangle(c_id, s_id, x, y, w, l) {
     Widget.call(this, c_id, s_id, x, y);
@@ -24,6 +31,9 @@ function Rectangle(c_id, s_id, x, y, w, l) {
 
 Rectangle.prototype = Object.create(Widget.prototype)
 Rectangle.prototype.constructor = Rectangle;
+Rectangle.prototype.copy = function() {
+    return new Rectangle(this.c_id, this.s_id, this.x, this.y, this.w, this.l)
+}
 
 function Textbox(c_id, s_id, x, y, text) {
     Widget.call(this, c_id, s_id, x, y);
@@ -32,5 +42,8 @@ function Textbox(c_id, s_id, x, y, text) {
 
 Textbox.prototype = Object.create(Widget.prototype)
 Textbox.prototype.constructor = Textbox;
+Textbox.prototype.copy = function() {
+    return new Textbox(this.c_id, this.s_id, this.x, this.y, this.w, this.text)
+}
 
 export {Widget, Circle, Rectangle, Textbox};

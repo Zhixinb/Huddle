@@ -59,15 +59,15 @@
                         :x="w * preview.x" :y="h * preview.y" :w="preview.w" :l="preview.l"/>
                     <div v-for="c in slides[curr_slide_id].components" :key="c.c_id">
                         <div v-if="c.constructor.name === 'Textbox'" draggable 
-                            v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd">
+                            v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
                             <Textbox :c_id="c.c_id" :x="w * c.x" :y="h * c.y" :text="c.text"/>
                         </div>
                         <div v-else-if="c.constructor.name === 'Circle'" draggable 
-                            v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd">
+                            v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
                             <MyCircle :c_id="c.c_id" :x="w * c.x" :y="h * c.y" :r="c.r" @update_radius="update_radius"/>
                         </div>
                         <div v-else-if="c.constructor.name == 'Rectangle'" draggable 
-                            v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd">
+                            v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
                             <MyRect :c_id="c.c_id" :x="w * c.x" :y="h * c.y" :w="c.w" :l="c.l" @update_dimen="update_dimen"/>
                         </div>
                     </div>
@@ -219,9 +219,11 @@ export default {
         },
         widgetDragStart:function(event, widget) {
             event.dataTransfer.setDragImage(document.createElement('div'), 0, 0);
-            this.preview = widget;
+            this.preview = widget.copy();
         },
-        widgetDragEnd:function(event) {
+        widgetDragEnd:function(event, widget) {
+            widget.x = this.preview.x;
+            widget.y = this.preview.y;
             this.preview = null;
             console.log("Signal: Widget moved")
         }
