@@ -11,7 +11,9 @@
           v-on="on"
           v-on:click="onClick"
           :disabled='!can_share'
+          class='ma-1'
         >
+          <v-icon>mdi-account-multiple</v-icon>
           Share
         </v-btn>
       </template>
