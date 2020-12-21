@@ -48,7 +48,7 @@ function Textbox(c_id, s_id, x, y, text, type_name) {
 Textbox.prototype = Object.create(Widget.prototype)
 Textbox.prototype.constructor = Textbox;
 Textbox.prototype.copy = function() {
-    return new Textbox(this.c_id, this.s_id, this.x, this.y, this.w, this.text, this.type_name)
+    return new Textbox(this.c_id, this.s_id, this.x, this.y, this.text, this.type_name)
 }
 
 export {Widget, Circle, Rectangle, Textbox};
