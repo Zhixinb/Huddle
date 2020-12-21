@@ -1,8 +1,12 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import workspaceStore from './modules/workspace_store'
 
 Vue.use(Vuex)
 export default new Vuex.Store({
+  modules: {
+    ws: workspaceStore
+  },
   state: {
     connected: false,
     disconnected: false,
@@ -28,6 +32,13 @@ export default new Vuex.Store({
         return state.uid
       } else {
         return 'Unknown uid'
+      }
+    },
+    room (state) {
+      if (state.room) {
+        return state.room
+      } else {
+        return 'Unknown room'
       }
     }
   },
@@ -76,8 +87,8 @@ export default new Vuex.Store({
         return (context.state.disconnected = true)
       }, 3000)
     },
-    WS_message (context, message) {
-      // Corresponds to send() from flask
+    // WS_message corresponds to send() from flask
+    WS_message (context, message) {      
       context.commit('reset_error')
       context.commit('set_workspace', message)
       context.commit('set_room', message.workspace_id)

@@ -33,7 +33,7 @@
 </template>
 
 <script>
-
+import {mapMutations} from 'vuex'
 export default {
   name: 'join-form',
   data: () => ({
@@ -63,11 +63,26 @@ export default {
     }
   },
   methods: {
-    // ...mapMutations(['set_room']),
+    ...mapMutations(['set_room']),
     join_room () {
       this.$refs.form.validate()
       if (this.valid_form) {
+        const params = {
+          uid: this.$store.getters.uid,
+          room: this.room_id
+        }
+        this.$socket.emit('get_enter_room_perm', params)
+      }
+    }
+  },
+  sockets: {
+    enter_room_perm_result (data) {
+      let canEnter = data.result
+      if (canEnter) {
+        this.set_room(this.room_id)
         this.$router.push({ name: 'Workspace', params: { room: this.room_id } })
+      } else {
+        this.$router.push({ name: 'Error', params: { msg: 'No access to Room ' + this.room_id } })
       }
     }
   }

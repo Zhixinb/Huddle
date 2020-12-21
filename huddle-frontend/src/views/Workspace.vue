@@ -10,7 +10,7 @@
 
     <v-app-bar app>
 
-        <v-toolbar-title>Huddle: {{ curr_slide_id }} </v-toolbar-title>
+        <v-toolbar-title>Huddle(Slide:{{ curr_slide_id }}, Role: {{role}}) </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-tooltip bottom>
              <template v-slot:activator="{ on, attrs }">
@@ -44,6 +44,7 @@
              </template>
              <span>New Slide</span>
         </v-tooltip>
+        <permission-modal/>
         <button type="button" @click="toggle" >Fullscreen</button>
     </v-app-bar>
 
@@ -81,6 +82,7 @@
 
 <script>
 import Slide from '@/components/app/Slide';
+import PermissionModal from '@/components/app/PermissionModal'
 import {mapState, mapMutations} from 'vuex'
 import fullscreen from 'vue-fullscreen';
 import Vue from 'vue';
@@ -92,8 +94,9 @@ import {Widget, Circle as CircleWidget, Rectangle as RectWidget, Textbox as Text
 Vue.use(fullscreen);
 
 export default {
-    name: 'Workspace',
+    name: 'Workspace',    
     data: () => ({
+        curr_room_id: '',
         curr_slide_id: 0,
         next_c_id: 0,
         next_s_id: 1,
@@ -116,10 +119,11 @@ export default {
     beforeMount () {
         const params = {
             uid: this.$store.getters.uid,
-            room: this.$route.params.room
+            room: this.$store.getters.room,
+            sid: this.$store.getters.sid
         }
-        this.set_room(this.room_id)
         this.$socket.emit('join', params)
+        this.$socket.emit('get_share_state', params)
     },
     beforeDestroy () {
         const params = {
@@ -212,10 +216,12 @@ export default {
         Slide,
         Textbox,
         'MyCircle': Circle,
-        'MyRect': Rect
+        'MyRect': Rect,
+        PermissionModal
     },
     computed: {
-        ...mapState(['workspace'])
+        ...mapState(['workspace']),
+        ...mapState('ws', ['role'])
     }
 }
 </script>
