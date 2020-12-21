@@ -1,5 +1,6 @@
 from flask import Flask, render_template, jsonify
 from flask_socketio import SocketIO, join_room, leave_room, emit, send
+from huddle.router import Router
 from huddle.workspace import Workspace, Permission
 import sys
 import json
@@ -8,8 +9,8 @@ import json
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app, cors_allowed_origins="*")
-ROOMS = {}  # dict to track active workspaces
-
+ROOMS = {} # dict to track active workspaces
+ROUTERS = {} #dict to track routers
 
 @socketio.on('create')
 def on_create(data):
@@ -18,6 +19,7 @@ def on_create(data):
     ws = Workspace(uid)
     room = ws.workspace_id
     ROOMS[room] = ws
+    ROUTERS[room] = Router()
     join_room(room)
     user_room = [room_key for room_key,
                  workspace in ROOMS.items() if workspace.has_access(uid)]
@@ -42,6 +44,13 @@ def on_join(data):
         ws = ROOMS[room]
         ws.users.add(uid, sid)
         send(ws.to_json(), room=room)
+
+        router = ROUTERS[room]
+        room_data = router.get_state()
+
+        emit('update_slides_result', {
+             'new_state': room_data})
+
     else:
         emit('error', {'error': 'Unable to join room. Room does not exist.'})
 
@@ -57,6 +66,19 @@ def on_leave(data):
         ws.users.remove(uid)
         send(ws.to_json(), room=room)
 
+@socketio.on('change')
+def on_change(data):
+    """Change a workspace"""
+    key = data['key']
+    text = data['text']
+    uid = data['uid']
+    room = data['room']
+    if room in ROOMS:
+        ws = ROOMS[room]
+        router = ROUTERS[room]
+
+    ##BASIC FLOW:
+    #
 
 @socketio.on('get_share_state')
 def on_get_share_state(data):
@@ -130,6 +152,50 @@ def on_update_whitelist(data):
     else:
         emit('error', {'error': 'Unable to update whitelist'})
 
+@socketio.on('update_slides')
+def on_update_slides(data):
+    uid = data['uid']
+    room = data['room']
+    state = data['new_state']
+    if room in ROOMS:
+        router = ROUTERS[room]
+        router.update_state(state)
+
+        emit('update_slides_result', {
+             'new_state': state}, room=room)
+             
+    else:
+        emit('error', {'error': 'Unable to update slides states'})
+
+@socketio.on('update_widget_state')
+def on_update_widgets(data):
+    uid = data['uid']
+    room = data['room']
+    name = data['name']
+    s_id = data['s_id']
+    c_id = data['c_id']
+    if room in ROOMS:
+        if (name == 'Circle'):
+            router = ROUTERS[room]
+            value = data['value']
+            router.update_circle_rad(s_id, c_id, value)
+            room_data = router.get_state()
+
+            emit('update_slides_result', {
+                'new_state': room_data}, room=room)
+        if (name == 'Rectangle'):
+            router = ROUTERS[room]
+            w = data['w']
+            l = data['l']
+            router.update_rect_sides(s_id, c_id, w, l)
+            room_data = router.get_state()
+
+            emit('update_slides_result', {
+                'new_state': room_data}, room=room)
+       
+             
+    else:
+        emit('error', {'error': 'Unable to update widget states'})
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', debug=True)

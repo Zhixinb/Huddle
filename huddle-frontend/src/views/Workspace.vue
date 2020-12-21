@@ -80,18 +80,20 @@
                         :x="w * preview.x" :y="h * preview.y" :r="preview.r"/>
                     <MyRect v-else-if="preview !== null && preview.constructor.name == 'Rectangle'" 
                         :x="w * preview.x" :y="h * preview.y" :w="preview.w" :l="preview.l"/>
+                  <div> {{slides[curr_slide_id].components}}</div>
+                  <!-- TODO: fix empty list error, check slides.length before accessing component -->
                     <div v-for="c in slides[curr_slide_id].components" :key="c.c_id">
-                        <div v-if="c.constructor.name === 'Textbox'" draggable v-on:click="widgetClicked($event, c)"
+                        <div v-if="c.type_name === 'Textbox'" draggable 
                             v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
-                            <Textbox :c_id="c.c_id" :x="w * c.x" :y="h * c.y" :text="c.text"/>
+                            <Textbox :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :text="c.text"/>
                         </div>
-                        <div v-else-if="c.constructor.name === 'Circle'" draggable 
+                        <div v-else-if="c.type_name === 'Circle'" draggable 
                             v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
-                            <MyCircle :c_id="c.c_id" :x="w * c.x" :y="h * c.y" :r="c.r" @update_radius="update_radius"/>
+                            <MyCircle :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :r="c.r" @update_radius="update_radius"/>
                         </div>
-                        <div v-else-if="c.constructor.name == 'Rectangle'" draggable 
+                        <div v-else-if="c.type_name == 'Rectangle'" draggable 
                             v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
-                            <MyRect :c_id="c.c_id" :x="w * c.x" :y="h * c.y" :w="c.w" :l="c.l" @update_dimen="update_dimen"/>
+                            <MyRect :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :w="c.w" :l="c.l" @update_dimen="update_dimen"/>
                         </div>
                     </div>
                 </fullscreen>
@@ -108,8 +110,8 @@ import PermissionModal from '@/components/app/PermissionModal'
 import {mapState, mapMutations} from 'vuex'
 import fullscreen from 'vue-fullscreen';
 import Vue from 'vue';
-import Textbox from '../components/widgets/Textbox.vue';
 import TextboxProperty from '../components/properties/TextboxProperty.vue';
+import Textbox from '@/components/widgets/Textbox.vue';
 import Circle from '../components/widgets/Circle.vue';
 import Rect from '../components/widgets/Rect.vue';
 import {Widget, Circle as CircleWidget, Rectangle as RectWidget, Textbox as TextWidget} from '../models/widget.js';
@@ -123,9 +125,6 @@ export default {
         curr_slide_id: 0,
         next_c_id: 0,
         next_s_id: 1,
-        slides: [
-            { id: 0, components: [] }
-        ],
         fullscreen: false,
         fields: [],
         count: 0,
@@ -138,6 +137,22 @@ export default {
         h: screen.height * 0.7
         
     }),
+    watch: {
+      // TODO FOR KEVIN: Synchronize on a per-delta basis rather than per-slide
+      slides: {
+        deep: true,
+        handler(newState, oldState) {
+
+          const params = {
+            uid: this.$store.getters.uid,
+            room: this.$route.params.room,
+            new_state: newState
+          }
+          // console.log(params)
+          this.$socket.emit('update_slides', params)
+      }
+      }
+    },
     created() {
     },
     beforeMount () {
@@ -146,6 +161,7 @@ export default {
             room: this.$store.getters.room,
             sid: this.$store.getters.sid
         }
+        
         this.$socket.emit('join', params)
         this.$socket.emit('get_share_state', params)
     },
@@ -168,12 +184,31 @@ export default {
             this.next_s_id += 1;
         },
         update_radius: function (value) {
-            this.slides[this.curr_slide_id].components.find(x => x.c_id === value.c_id).r = value.r;
+            const params = {
+              uid: this.$store.getters.uid,
+              room: this.$store.getters.room,
+              s_id: value.s_id,
+              c_id: value.c_id,
+              value: value.r,
+              name: 'Circle'
+            }
+            this.$socket.emit('update_widget_state', params)
+            //this.slides[this.curr_slide_id].components.find(x => x.c_id === value.c_id).r = value.r;
         },
         update_dimen: function (value) {
-            var obj = this.slides[this.curr_slide_id].components.find(x => x.c_id === value.c_id);
-            obj.w = value.w;
-            obj.l = value.l;
+          const params = {
+              uid: this.$store.getters.uid,
+              room: this.$store.getters.room,
+              s_id: value.s_id,
+              c_id: value.c_id,
+              w: value.w,
+              l: value.l,
+              name: 'Rectangle'
+            }
+            this.$socket.emit('update_widget_state', params)
+            // var obj = this.slides[this.curr_slide_id].components.find(x => x.c_id === value.c_id);
+            // obj.w = value.w;
+            // obj.l = value.l;
         },
         toggle() {
             this.$refs['fullscreen'].toggle()
@@ -192,11 +227,11 @@ export default {
             event.dataTransfer.setDragImage(document.createElement('div'), 0, 0);
             const widget = event.target.id;
             if (widget === 'textbox') {
-                this.preview = new TextWidget(this.next_c_id, this.curr_slide_id, 0, 0, "Text");
+                this.preview = new TextWidget(this.next_c_id, this.curr_slide_id, 0, 0, "Text", "Textbox");
             } else if (widget === 'circle') {
-                this.preview = new CircleWidget(this.next_c_id, this.curr_slide_id, 0, 0, 25)
+                this.preview = new CircleWidget(this.next_c_id, this.curr_slide_id, 0, 0, 25, "Circle")
             } else if (widget === 'rectangle') {
-                this.preview = new RectWidget(this.next_c_id, this.curr_slide_id, 0, 0, 50, 50)
+                this.preview = new RectWidget(this.next_c_id, this.curr_slide_id, 0, 0, 50, 50, "Rectangle")
             } else {
                 this.preview = null;
             }
@@ -253,7 +288,7 @@ export default {
     },
     computed: {
         ...mapState(['workspace']),
-        ...mapState('ws', ['role'])
+        ...mapState('ws', ['role', 'slides'])
     }
 }
 </script>
