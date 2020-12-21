@@ -1,11 +1,25 @@
 <template>
     <div>
     <v-navigation-drawer app>
-        <v-list-item v-for="s in slides" :key="s.id" link @click.stop="update_slide(s.id)">
-            <v-list-item-content>
-                <slide :message="s.id"> </slide>
-            </v-list-item-content>
-        </v-list-item>
+        <v-list dense>
+            <v-list-item v-for="s in slides" :key="s.id" link @click.stop="update_slide(s.id)">
+                <v-list-item-content>
+                    <slide :message="s.id"> </slide>
+                </v-list-item-content>
+            </v-list-item>
+        </v-list>
+    </v-navigation-drawer>
+
+    <v-navigation-drawer app right>
+        <v-list>
+            <v-list-item v-for="c in this.selected_widgets" :key="c" link>
+                <v-list-item-content>
+                    <div v-if="c.constructor.name === 'Textbox'">
+                        <TextboxProperty :t="c.text"></TextboxProperty>
+                    </div>
+                </v-list-item-content>
+            </v-list-item>
+         </v-list>
     </v-navigation-drawer>
 
     <v-app-bar app>
@@ -44,8 +58,15 @@
              </template>
              <span>New Slide</span>
         </v-tooltip>
+        <v-tooltip bottom>
+             <template v-slot:activator="{ on, attrs }">
+                <v-btn icon v-bind="attrs" v-on="on" @click.stop="toggle">
+                    <v-icon>mdi-fullscreen</v-icon>
+                </v-btn>
+             </template>
+             <span>Fullscreen</span>
+        </v-tooltip>
         <permission-modal/>
-        <button type="button" @click="toggle" >Fullscreen</button>
     </v-app-bar>
 
     <div class="pa-5">
@@ -59,7 +80,7 @@
                     <MyRect v-else-if="preview !== null && preview.constructor.name == 'Rectangle'" 
                         :x="w * preview.x" :y="h * preview.y" :w="preview.w" :l="preview.l"/>
                     <div v-for="c in slides[curr_slide_id].components" :key="c.c_id">
-                        <div v-if="c.constructor.name === 'Textbox'" draggable 
+                        <div v-if="c.constructor.name === 'Textbox'" draggable v-on:click="widgetClicked($event, c)"
                             v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
                             <Textbox :c_id="c.c_id" :x="w * c.x" :y="h * c.y" :text="c.text"/>
                         </div>
@@ -87,6 +108,7 @@ import {mapState, mapMutations} from 'vuex'
 import fullscreen from 'vue-fullscreen';
 import Vue from 'vue';
 import Textbox from '../components/widgets/Textbox.vue';
+import TextboxProperty from '../components/properties/TextboxProperty.vue';
 import Circle from '../components/widgets/Circle.vue';
 import Rect from '../components/widgets/Rect.vue';
 import {Widget, Circle as CircleWidget, Rectangle as RectWidget, Textbox as TextWidget} from '../models/widget.js';
@@ -107,6 +129,7 @@ export default {
         fields: [],
         count: 0,
         curr_room_id: '',
+        selected_widgets: [],
 
         // Dragging elements state
         preview: null,
@@ -151,8 +174,7 @@ export default {
             obj.w = value.w;
             obj.l = value.l;
         },
-        toggle() 
-        {
+        toggle() {
             this.$refs['fullscreen'].toggle()
         },
         fullscreenChange(full) {
@@ -210,11 +232,20 @@ export default {
             widget.y = this.preview.y;
             this.preview = null;
             console.log("Signal: Widget moved")
+        },
+        widgetClicked:function(event, widget) {
+            if (!this.selected_widgets.includes(widget)) {
+                if (this.selected_widgets.length > 1) {
+                    this.selected_widgets.shift();
+                }
+                this.selected_widgets.push(widget);
+            }
         }
     },
     components: {
         Slide,
         Textbox,
+        TextboxProperty,
         'MyCircle': Circle,
         'MyRect': Rect,
         PermissionModal
