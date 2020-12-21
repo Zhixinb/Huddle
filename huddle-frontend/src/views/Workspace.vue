@@ -80,7 +80,7 @@
                         :x="w * preview.x" :y="h * preview.y" :r="preview.r"/>
                     <MyRect v-else-if="preview !== null && preview.constructor.name == 'Rectangle'" 
                         :x="w * preview.x" :y="h * preview.y" :w="preview.w" :l="preview.l"/>
-                  <div> {{slides[curr_slide_id].components}}</div>
+                  <!-- <div> {{slides[curr_slide_id].components}}</div> -->
                   <!-- TODO: fix empty list error, check slides.length before accessing component -->
                     <div v-for="c in slides[curr_slide_id].components" :key="c.c_id">
                         <div v-if="c.type_name === 'Textbox'" draggable 
