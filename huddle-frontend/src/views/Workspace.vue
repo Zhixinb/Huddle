@@ -1,6 +1,7 @@
 <template>
-    <div>
-    <v-navigation-drawer app>
+    <v-app>
+    
+    <v-navigation-drawer app clipped>
         <v-list dense>
             <v-list-item v-for="s in slides" :key="s.id" link @click.stop="update_slide(s.id)">
                 <v-list-item-content>
@@ -10,7 +11,7 @@
         </v-list>
     </v-navigation-drawer>
 
-    <v-navigation-drawer app right>
+    <v-navigation-drawer app clipped right>
         <v-list>
             <v-list-item v-for="c in this.selected_widgets" :key="c" link>
                 <v-list-item-content>
@@ -22,7 +23,7 @@
          </v-list>
     </v-navigation-drawer>
 
-    <v-app-bar app>
+    <v-app-bar app clipped-left clipped-right permanent>
 
         <v-toolbar-title>Huddle(Slide:{{ curr_slide_id }}, Role: {{role}}) </v-toolbar-title>
         <v-spacer></v-spacer>
@@ -98,7 +99,7 @@
         </v-fade-transition>
     </div>
 
-    </div>
+    </v-app>
 </template>
 
 <script>
