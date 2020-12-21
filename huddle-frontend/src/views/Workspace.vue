@@ -80,10 +80,9 @@
                         :x="w * preview.x" :y="h * preview.y" :r="preview.r"/>
                     <MyRect v-else-if="preview !== null && preview.constructor.name == 'Rectangle'" 
                         :x="w * preview.x" :y="h * preview.y" :w="preview.w" :l="preview.l"/>
-                  <div> {{slides[curr_slide_id].components}}</div>
                   <!-- TODO: fix empty list error, check slides.length before accessing component -->
                     <div v-for="c in slides[curr_slide_id].components" :key="c.c_id">
-                        <div v-if="c.type_name === 'Textbox'" draggable 
+                        <div v-if="c.type_name === 'Textbox'" draggable v-on:click="widgetClicked($event, c)"
                             v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
                             <Textbox :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :text="c.text"/>
                         </div>
@@ -106,8 +105,8 @@
 
 <script>
 import Slide from '@/components/app/Slide';
-import PermissionModal from '@/components/app/PermissionModal'
-import {mapState, mapMutations} from 'vuex'
+import PermissionModal from '@/components/app/PermissionModal';
+import {mapState, mapMutations} from 'vuex';
 import fullscreen from 'vue-fullscreen';
 import Vue from 'vue';
 import TextboxProperty from '../components/properties/TextboxProperty.vue';
@@ -128,7 +127,6 @@ export default {
         fullscreen: false,
         fields: [],
         count: 0,
-        curr_room_id: '',
         selected_widgets: [],
 
         // Dragging elements state
