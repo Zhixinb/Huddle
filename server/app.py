@@ -152,6 +152,21 @@ def on_update_whitelist(data):
     else:
         emit('error', {'error': 'Unable to update whitelist'})
 
+@socketio.on('new_slide')
+def on_new_slide(data):
+    uid = data['uid']
+    room = data['room']
+    s_id = data['s_id']
+    if room in ROOMS:
+        router = ROUTERS[room]
+        router.add_new_slide(s_id)
+        room_data = router.get_state()
+
+        emit('update_slides_result', {
+             'new_state': room_data}, room=room)
+    else:
+        emit('error', {'error': 'Unable to update slides states'})
+
 @socketio.on('update_slides')
 def on_update_slides(data):
     uid = data['uid']
@@ -160,8 +175,7 @@ def on_update_slides(data):
     if room in ROOMS:
         router = ROUTERS[room]
         router.update_state(state)
-        print("On Update Slides")
-        print(state)
+        
         emit('update_slides_result', {
              'new_state': state}, room=room)
     else:
@@ -194,6 +208,7 @@ def on_update_component_id(data):
         changes = data['changes']
         router.update_component_id(s_id, c_id, changes)
         room_data = router.get_state()
+
         emit('update_slides_result', {
             'new_state': room_data}, room=room)
              

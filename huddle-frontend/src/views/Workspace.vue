@@ -177,8 +177,13 @@ export default {
             this.curr_slide_id = id;
         },
         append_slide() {
-            this.slides.push({ id: this.next_s_id, components: {} });
             this.curr_slide_id = this.next_s_id;
+            const params = {
+                uid: this.$store.getters.uid,
+                room: this.$store.getters.room,
+                s_id: this.next_s_id
+            }
+            this.$socket.emit('new_slide', params)
             this.next_s_id += 1;
         },
         // Signals
@@ -251,9 +256,6 @@ export default {
         widgetDragStart:function(event, widget) {
             event.dataTransfer.setDragImage(document.createElement('div'), 0, 0);
             this.preview = Widget.copy(widget);
-            console.log("Start")
-            console.log(widget)
-            console.log(this.preview)
         },
         widgetDragEnd:function(event, widget) {
             const params = {

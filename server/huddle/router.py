@@ -25,3 +25,6 @@ class Router(object):
     def update_component_id(self, sid, cid, changes):
         self.state_manager.update_component_id(sid, cid, changes)
 
+    def add_new_slide(self, sid):
+        self.state_manager.add_new_slide(sid)
+

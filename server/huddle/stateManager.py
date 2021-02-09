@@ -17,31 +17,6 @@ class StateManager(object):
 
     def getAllData(self):
         return self.storedData
-
-    def update_circle_rad(self, sid, cid, r):
-        for item in self.storedData:
-            if (item["id"] == sid and cid in item["components"]):
-                component = item["components"][cid]
-                component["r"] = r
-                return component
-        return None
-
-    def update_rect_sides(self, sid, cid, w, l):
-        for item in self.storedData:
-            if (item["id"] == sid and cid in item["components"]):
-                component = item["components"][cid]
-                component["w"] = w
-                component["l"] = l
-                return component
-        return None
-
-    def update_slider_value(self, sid, cid, value):
-        for item in self.storedData:
-            if (item["id"] == sid and cid in item["components"]):
-                component = item["components"][cid]
-                component["value"] = value
-                return component
-        return None
         
     def add_new_widget(self, component):
         sid = component["s_id"]
@@ -69,3 +44,6 @@ class StateManager(object):
                     component[k] = changes[k]
                 return True
         return False
+
+    def add_new_slide(self, sid):
+        self.storedData.append({ "id": sid, "components": {} })
