@@ -12,43 +12,52 @@ Widget.prototype.signals = [
 Widget.prototype.slots = [
 ]
 
-Widget.prototype.copy = function() {
-    return new Widget(this.c_id, this.s_id, this.x, this.y, this.type_name)
+Widget.copy = function(widget) {
+    if (widget.type_name == "Textbox") {
+        return new Textbox(widget.c_id, widget.s_id, widget.x, widget.y, widget.text, widget.type_name)
+    } else if (widget.type_name == "Circle") {
+        return new Circle(widget.c_id, widget.s_id, widget.x, widget.y, widget.r, widget.type_name)
+    } else if (widget.type_name == "Rectangle") {
+        return new Rectangle(widget.c_id, widget.s_id, widget.x, widget.y, widget.w, widget.l, widget.type_name)
+    } else if (widget.type_name == "Slider") {
+        return new Slider(widget.c_id, widget.s_id, widget.x, widget.y, widget.value, widget.type_name)
+    }
+    return null;
 }
 
-function Circle(c_id, s_id, x, y, r, type_name) {
-    Widget.call(this, c_id, s_id, x, y, type_name);
+function Circle(c_id, s_id, x, y, r) {
+    Widget.call(this, c_id, s_id, x, y, "Circle");
     this.r = r;
 }
 
 //TODO: make the type a default
 Circle.prototype = Object.create(Widget.prototype)
 Circle.prototype.constructor = Circle;
-Circle.prototype.copy = function() {
-    return new Circle(this.c_id, this.s_id, this.x, this.y, this.r, this.type_name)
-}
 
-function Rectangle(c_id, s_id, x, y, w, l, type_name) {
-    Widget.call(this, c_id, s_id, x, y, type_name);
+function Rectangle(c_id, s_id, x, y, w, l) {
+    Widget.call(this, c_id, s_id, x, y, "Rectangle");
     this.w = w;
     this.l = l;
 }
 
 Rectangle.prototype = Object.create(Widget.prototype)
 Rectangle.prototype.constructor = Rectangle;
-Rectangle.prototype.copy = function() {
-    return new Rectangle(this.c_id, this.s_id, this.x, this.y, this.w, this.l, this.type_name)
-}
 
-function Textbox(c_id, s_id, x, y, text, type_name) {
-    Widget.call(this, c_id, s_id, x, y, type_name);
+function Textbox(c_id, s_id, x, y, text) {
+    Widget.call(this, c_id, s_id, x, y, "Textbox");
     this.text = text;
 }
 
 Textbox.prototype = Object.create(Widget.prototype)
 Textbox.prototype.constructor = Textbox;
-Textbox.prototype.copy = function() {
-    return new Textbox(this.c_id, this.s_id, this.x, this.y, this.text, this.type_name)
+
+function Slider(c_id, s_id, x, y, value) {
+    Widget.call(this, c_id, s_id, x, y, "Slider");
+    this.value = value;
 }
 
-export {Widget, Circle, Rectangle, Textbox};
+Slider.prototype = Object.create(Widget.prototype)
+Slider.prototype.constructor = Slider;
+
+
+export {Widget, Circle, Rectangle, Textbox, Slider};

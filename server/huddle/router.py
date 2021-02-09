@@ -16,9 +16,12 @@ class Router(object):
     def update_state(self, new_state):
         self.state_manager.update_state(new_state)
 
-    def update_circle_rad(self, sid, cid, value):
-        self.state_manager.update_circle_rad(sid, cid, value)
+    def add_new_widget(self, component):
+        self.state_manager.add_new_widget(component)
+        
+    def update_component(self, component):
+        self.state_manager.update_component(component)
 
-    def update_rect_sides(self, sid, cid, w, l):
-        self.state_manager.update_rect_sides(sid, cid, w, l)
+    def update_component_id(self, sid, cid, changes):
+        self.state_manager.update_component_id(sid, cid, changes)
 
