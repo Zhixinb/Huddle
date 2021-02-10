@@ -4,12 +4,13 @@ function Widget(c_id, s_id, x, y, type_name) {
     this.x = x;
     this.y = y;
     this.type_name = type_name;
+    this.connections = []
 }
 
-Widget.prototype.signals = [
+Widget.signals = [
 ]
 
-Widget.prototype.slots = [
+Widget.slots = [
 ]
 
 Widget.copy = function(widget) {
@@ -33,6 +34,15 @@ function Circle(c_id, s_id, x, y, r) {
 //TODO: make the type a default
 Circle.prototype = Object.create(Widget.prototype)
 Circle.prototype.constructor = Circle;
+
+Circle.signals = [
+
+]
+Circle.slots = [
+    ["update_radius", function(circle, radius) {
+        circle.r = radius * 2;
+    }]
+]
 
 function Rectangle(c_id, s_id, x, y, w, l) {
     Widget.call(this, c_id, s_id, x, y, "Rectangle");
@@ -59,5 +69,7 @@ function Slider(c_id, s_id, x, y, value) {
 Slider.prototype = Object.create(Widget.prototype)
 Slider.prototype.constructor = Slider;
 
+Slider.signals = ["value_changed"]
+Slider.slots = [];
 
 export {Widget, Circle, Rectangle, Textbox, Slider};

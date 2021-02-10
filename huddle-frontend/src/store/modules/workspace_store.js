@@ -5,7 +5,7 @@ export default ({
     global_share_state: -1,
     can_share: false,
     permission_map: {},
-    slides: [],
+    slides: {},
     role: ''
   },
   getters: {

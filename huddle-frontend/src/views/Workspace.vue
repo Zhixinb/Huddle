@@ -195,6 +195,7 @@ export default {
                 c_id: value.c_id,
                 changes: {"value": value.value}
             }
+            console.log(params)
             this.$socket.emit('update_component_id', params)
         },
         toggle() {
