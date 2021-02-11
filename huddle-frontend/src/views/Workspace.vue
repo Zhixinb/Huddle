@@ -13,10 +13,11 @@
 
     <v-navigation-drawer app clipped right>
         <v-list>
-            <v-list-item v-for="c in this.selected_widgets" :key="c" link>
+            <v-list-item v-for="c_id in this.selected_widgets" :key="c_id" link>
                 <v-list-item-content>
-                    <div v-if="c.constructor.name === 'Textbox'">
-                        <TextboxProperty :t="c.text"></TextboxProperty>
+                    <div v-if="slides[curr_slide_id]['components'][c_id].type_name === 'Textbox'">
+                        <TextboxProperty :t="slides[curr_slide_id]['components'][c_id].text" 
+                            :c_id="c_id" :s_id="curr_slide_id" @text_changed="text_changed" />
                     </div>
                 </v-list-item-content>
             </v-list-item>
@@ -82,7 +83,7 @@
         <v-fade-transition appear>
             <v-card id ="graph-wrapper" :width="w" :height="h" v-on:dragover="dragOver">
                 <fullscreen ref="fullscreen" @change="fullscreenChange" background=#FFF>
-                    <Textbox v-if="preview !== null && preview.constructor.name == 'Textbox'" 
+                    <Textbox v-if="preview !== null && preview.constructor.name == 'Textbox'"
                         :x="w * preview.x" :y="h * preview.y" :text="preview.text"/>
                     <MyCircle v-else-if="preview !== null && preview.constructor.name == 'Circle'" 
                         :x="w * preview.x" :y="h * preview.y" :r="preview.r"/>
@@ -92,9 +93,9 @@
                         :x="w * preview.x" :y="h * preview.y" :value="preview.value"/>
                   <!-- TODO: fix empty list error, check slides.length before accessing component -->
                     <div v-for="c in slides[curr_slide_id].components" :key="c.c_id">
-                        <div v-if="c.type_name === 'Textbox'" draggable v-on:click="widgetClicked($event, c)"
+                        <div v-if="c.type_name === 'Textbox'" draggable v-on:click="widgetClicked($event, c.s_id, c.c_id)"
                             v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
-                            <Textbox :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :text="c.text"/>
+                            <Textbox :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :text="c.text" />
                         </div>
                         <div v-else-if="c.type_name === 'Circle'" draggable 
                             v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
@@ -195,6 +196,18 @@ export default {
                 c_id: value.c_id,
                 changes: {"value": value.value}
             }
+            this.$socket.emit('update_component_id', params)
+        },
+        text_changed: function (value) {
+            console.log("text change enter")
+            const params = {
+                uid: this.$store.getters.uid,
+                room: this.$store.getters.room,
+                s_id: value.s_id,
+                c_id: value.c_id,
+                changes: {"text": value.text}
+            }
+            console.log('params')
             console.log(params)
             this.$socket.emit('update_component_id', params)
         },
@@ -269,12 +282,15 @@ export default {
             this.$socket.emit('update_component_id', params)
             this.preview = null;
         },
-        widgetClicked:function(event, widget) {
-            if (!this.selected_widgets.includes(widget)) {
-                if (this.selected_widgets.length > 1) {
-                    this.selected_widgets.shift();
+        widgetClicked:function(event, s_id, c_id) {
+            if (s_id === this.curr_slide_id) {
+                var selected = this.selected_widgets.find(element => element === c_id);
+                if (selected === undefined) {
+                    if (this.selected_widgets.length > 1) {
+                        this.selected_widgets.shift();
+                    }
+                    this.selected_widgets.push(c_id);
                 }
-                this.selected_widgets.push(widget);
             }
         }
     },
