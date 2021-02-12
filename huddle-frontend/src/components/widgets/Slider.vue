@@ -1,8 +1,6 @@
 <template>
-<div>
-    <div class="absolute slider-length" :style="{'top': y + 'px', 'left': x + 'px'}">
-        <v-slider dense max="100" min="0" :value="value" @change="value_changed($event)"></v-slider>
-    </div>
+<div class="absolute slider-length" :style="{'top': y + 'px', 'left': x + 'px'}">
+    <v-slider dense max="100" min="0" :value="value" @input="value_changed($event)"></v-slider>
 </div>
 </template>
 
@@ -28,7 +26,7 @@ export default {
     },
     methods: {
         value_changed(event) {
-            this.$emit('value_changed', {c_id: this.c_id, s_id: this.s_id, value: event})
+            this.$emit('value_changed', {c_id: this.c_id, s_id: this.s_id, value: event, signal: 0})
         }
     }
 }

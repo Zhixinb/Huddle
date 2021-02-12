@@ -16,8 +16,8 @@ class Router(object):
     def update_state(self, new_state):
         self.state_manager.update_state(new_state)
 
-    def add_new_widget(self, component):
-        self.state_manager.add_new_widget(component)
+    def add_new_component(self, component):
+        self.state_manager.add_new_component(component)
         
     def update_component(self, component):
         self.state_manager.update_component(component)
@@ -25,6 +25,9 @@ class Router(object):
     def update_component_id(self, sid, cid, changes):
         self.state_manager.update_component_id(sid, cid, changes)
 
-    def add_new_slide(self, sid):
-        self.state_manager.add_new_slide(sid)
+    def add_new_slide(self):
+        self.state_manager.add_new_slide()
+
+    def add_new_connection(self, sid, cid0, cid1, signal, slot):
+        self.state_manager.add_new_connection(sid, cid0, cid1, signal, slot)
 

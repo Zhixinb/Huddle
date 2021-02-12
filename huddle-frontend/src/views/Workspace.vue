@@ -5,7 +5,7 @@
         <v-list dense>
             <v-list-item v-for="s in slides" :key="s.id" link @click.stop="update_slide(s.id)">
                 <v-list-item-content>
-                    <slide :message="s.id"> </slide>
+                    <slide :id="s.id"> </slide>
                 </v-list-item-content>
             </v-list-item>
         </v-list>
@@ -84,30 +84,34 @@
             <v-card id ="graph-wrapper" :width="w" :height="h" v-on:dragover="dragOver">
                 <fullscreen ref="fullscreen" @change="fullscreenChange" background=#FFF>
                     <Textbox v-if="preview !== null && preview.constructor.name == 'Textbox'"
-                        :x="w * preview.x" :y="h * preview.y" :text="preview.text"/>
+                        :x="w * preview.x" :y="h * preview.y" :text="preview.text" :style="style"/>
                     <MyCircle v-else-if="preview !== null && preview.constructor.name == 'Circle'" 
-                        :x="w * preview.x" :y="h * preview.y" :r="preview.r"/>
+                        :x="w * preview.x" :y="h * preview.y" :r="preview.r" :style="style"/>
                     <MyRect v-else-if="preview !== null && preview.constructor.name == 'Rectangle'" 
-                        :x="w * preview.x" :y="h * preview.y" :w="preview.w" :l="preview.l"/>
+                        :x="w * preview.x" :y="h * preview.y" :w="preview.w" :l="preview.l" :style="style"/>
                     <Slider v-else-if="preview !== null && preview.constructor.name == 'Slider'" 
-                        :x="w * preview.x" :y="h * preview.y" :value="preview.value"/>
+                        :x="w * preview.x" :y="h * preview.y" :value="preview.value" :style="style"/>
                   <!-- TODO: fix empty list error, check slides.length before accessing component -->
                     <div v-for="c in slides[curr_slide_id].components" :key="c.c_id">
                         <div v-if="c.type_name === 'Textbox'" draggable v-on:click="widgetClicked($event, c.s_id, c.c_id)"
                             v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
-                            <Textbox :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :text="c.text" />
+                            <Textbox :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :text="c.text" 
+                                :style="style"/>
                         </div>
                         <div v-else-if="c.type_name === 'Circle'" draggable 
                             v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
-                            <MyCircle :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :r="c.r"/>
+                            <MyCircle :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :r="c.r" 
+                                :style="style"/>
                         </div>
                         <div v-else-if="c.type_name == 'Rectangle'" draggable 
                             v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
-                            <MyRect :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :w="c.w" :l="c.l"/>
+                            <MyRect :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :w="c.w" :l="c.l" 
+                                :style="style"/>
                         </div>
                         <div v-else-if="c.type_name == 'Slider'" draggable 
                             v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
-                            <Slider :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :value="c.value" @value_changed="value_changed"/>
+                            <Slider :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :value="c.value" 
+                                @value_changed="value_changed" :style="style"/>
                         </div>
                     </div>
                 </fullscreen>
@@ -125,7 +129,7 @@ import {mapState, mapMutations} from 'vuex';
 import fullscreen from 'vue-fullscreen';
 import Vue from 'vue';
 import TextboxProperty from '../components/properties/TextboxProperty.vue';
-import Textbox from '@/components/widgets/Textbox.vue';
+import Textbox from '../components/widgets/Textbox.vue';
 import Circle from '../components/widgets/Circle.vue';
 import Rect from '../components/widgets/Rect.vue';
 import Slider from '../components/widgets/Slider.vue'
@@ -139,9 +143,8 @@ export default {
     data: () => ({
         curr_room_id: '',
         curr_slide_id: 0,
-        next_c_id: 0,
-        next_s_id: 1,
         fullscreen: false,
+        scale: 1,
         fields: [],
         count: 0,
         selected_widgets: [],
@@ -178,28 +181,50 @@ export default {
             this.curr_slide_id = id;
         },
         append_slide() {
-            this.curr_slide_id = this.next_s_id;
             const params = {
                 uid: this.$store.getters.uid,
                 room: this.$store.getters.room,
-                s_id: this.next_s_id
             }
             this.$socket.emit('new_slide', params)
-            this.next_s_id += 1;
         },
         // Signals
         value_changed: function (value) {
+            const s_id = value.s_id
+            const c_id0 = value.c_id
+            const v = value.value
+            const signal = value.signal
+
             const params = {
                 uid: this.$store.getters.uid,
                 room: this.$store.getters.room,
-                s_id: value.s_id,
-                c_id: value.c_id,
-                changes: {"value": value.value}
+                s_id: s_id,
+                c_id: c_id0,
+                changes: {"value": v}
             }
             this.$socket.emit('update_component_id', params)
+            const connections = this.slides[s_id]["connections"]
+            const components = this.slides[s_id]["components"]
+            if (c_id0 in connections && signal in connections[c_id0])
+            {
+                const slots = connections[c_id0][signal];
+                for (var i = 0; i < slots.length; i++) {
+                    const [c_id1, slot] = slots[i];
+
+                    if (c_id1 in components) {
+                        const widget = components[c_id1].type_name;
+                        const params1 = {
+                            uid: this.$store.getters.uid,
+                            room: this.$store.getters.room,
+                            s_id: s_id,
+                            c_id: c_id1,
+                            changes: Widget.mapSlot(widget, slot, [v])
+                        }
+                        this.$socket.emit('update_component_id', params1)
+                    }
+                }
+            }
         },
         text_changed: function (value) {
-            console.log("text change enter")
             const params = {
                 uid: this.$store.getters.uid,
                 room: this.$store.getters.room,
@@ -207,8 +232,6 @@ export default {
                 c_id: value.c_id,
                 changes: {"text": value.text}
             }
-            console.log('params')
-            console.log(params)
             this.$socket.emit('update_component_id', params)
         },
         toggle() {
@@ -218,9 +241,11 @@ export default {
             if (full) {
                 this.w = screen.width;
                 this.h = screen.height;
+                this.scale = 10 / 7;
             } else {
                 this.w = screen.width * 0.7;
                 this.h = screen.height * 0.7;
+                this.scale = 1
             }
             this.fullscreen = full
         },
@@ -228,13 +253,13 @@ export default {
             event.dataTransfer.setDragImage(document.createElement('div'), 0, 0);
             const widget = event.target.id;
             if (widget === 'textbox') {
-                this.preview = new TextWidget(this.next_c_id, this.curr_slide_id, 0, 0, "Text");
+                this.preview = new TextWidget(-1, this.curr_slide_id, 0, 0, "Text");
             } else if (widget === 'circle') {
-                this.preview = new CircleWidget(this.next_c_id, this.curr_slide_id, 0, 0, 25)
+                this.preview = new CircleWidget(-1, this.curr_slide_id, 0, 0, 25)
             } else if (widget === 'rectangle') {
-                this.preview = new RectWidget(this.next_c_id, this.curr_slide_id, 0, 0, 50, 50)
+                this.preview = new RectWidget(-1, this.curr_slide_id, 0, 0, 50, 50)
             } else if (widget === 'slider') {
-                this.preview = new SliderWidget(this.next_c_id, this.curr_slide_id, 0, 0, 50)
+                this.preview = new SliderWidget(-1, this.curr_slide_id, 0, 0, 50)
             } else {
                 this.preview = null;
             }
@@ -256,14 +281,15 @@ export default {
         },
         dragEnd:function(event) {
             if (this.preview != null) {
-                this.slides[this.curr_slide_id].components[this.preview.c_id] = this.preview;
-                this.next_c_id += 1;
                 const params = {
                     uid: this.$store.getters.uid,
                     room: this.$store.getters.room,
                     component: this.preview
                 }
-                this.$socket.emit('new_widget', params)
+                this.$socket.emit('new_component', params)
+                if (this.slides[this.curr_slide_id]["next_c_id"] === 2) {
+                    this.addConnection(this.curr_slide_id, 0, 1, 0, 0)
+                }
             }
             this.preview = null;
         },
@@ -292,6 +318,19 @@ export default {
                     this.selected_widgets.push(c_id);
                 }
             }
+        },
+        addConnection(s_id, c_id0, c_id1, signal, slot) {
+            const params = {
+                uid: this.$store.getters.uid,
+                room: this.$store.getters.room,
+                s_id: s_id,
+                c_id0: c_id0,
+                c_id1: c_id1,
+                signal: signal,
+                slot, slot
+            }
+            this.$socket.emit('new_connection', params)
+
         }
     },
     components: {
@@ -305,7 +344,13 @@ export default {
     },
     computed: {
         ...mapState(['workspace']),
-        ...mapState('ws', ['role', 'slides'])
+        ...mapState('ws', ['role', 'slides']),
+        style () {
+            return {
+                transform: 'scale(' + this.scale + ')',
+                transformOrigin: 'top left'
+            }
+        }
     }
 }
 </script>

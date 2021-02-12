@@ -156,10 +156,9 @@ def on_update_whitelist(data):
 def on_new_slide(data):
     uid = data['uid']
     room = data['room']
-    s_id = data['s_id']
     if room in ROOMS:
         router = ROUTERS[room]
-        router.add_new_slide(s_id)
+        router.add_new_slide()
         room_data = router.get_state()
 
         emit('update_slides_result', {
@@ -215,19 +214,33 @@ def on_update_component_id(data):
     else:
         emit('error', {'error': 'Unable to update widget states'})
 
-@socketio.on('new_widget')
-def on_new_widget(data):
+@socketio.on('new_component')
+def on_new_component(data):
     uid = data['uid']
     room = data['room']
     component = data['component']
     if room in ROOMS:
         router = ROUTERS[room]
-        router.add_new_widget(component)
+        router.add_new_component(component)
         room_data = router.get_state()
 
         emit('update_slides_result', {
                 'new_state': room_data}, room=room)
              
+    else:
+        emit('error', {'error': 'Unable to create new widget'})
+
+@socketio.on('new_connection')
+def on_new_connection(data):
+    uid = data['uid']
+    room = data['room']
+    if room in ROOMS:
+        router = ROUTERS[room]
+        router.add_new_connection(data['s_id'], data['c_id0'], data['c_id1'], data['signal'], data['slot'])
+        room_data = router.get_state()
+
+        emit('update_slides_result', {
+                'new_state': room_data}, room=room)      
     else:
         emit('error', {'error': 'Unable to create new widget'})
 
