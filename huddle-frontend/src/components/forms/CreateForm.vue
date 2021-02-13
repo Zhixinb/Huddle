@@ -5,7 +5,7 @@
       id="create-form"
       ref="form"
     >
-      <v-card>
+      <div class="pr-6 pl-6 pb-6">
         <v-card-actions>
           <v-btn
             block
@@ -15,7 +15,7 @@
             id="create-btn"
           >New Workspace</v-btn>
         </v-card-actions>
-      </v-card>
+      </div>
     </v-form>
   </v-fade-transition>
 </template>
