@@ -13,28 +13,53 @@
 
     <v-navigation-drawer app clipped right>
         <v-list>
-            <v-list-item v-for="c_id in this.selected_widgets" :key="c_id" link>
+            <v-list-item v-for="(c_id, index) in this.selected_widgets" :key="c_id" link>
                 <v-list-item-content>
                     <div v-if="slides[curr_slide_id]['components'][c_id].type_name === 'Textbox'">
-                        <TextboxProperty :t="slides[curr_slide_id]['components'][c_id].text" 
-                            :c_id="c_id" :s_id="curr_slide_id" @text_changed="text_changed" />
+                        <Property :index="index" :c_id="c_id" :s_id="curr_slide_id" :type="'Textbox'"
+                            :t="slides[curr_slide_id]['components'][c_id].text" 
+                            @text_changed="text_changed"
+                            @slot_changed="slot_changed"
+                            @signal_changed="signal_changed" />
+                    </div>
+                    <div v-if="slides[curr_slide_id]['components'][c_id].type_name === 'Circle'">
+                        <Property :index="index" :c_id="c_id" :s_id="curr_slide_id" :type="'Circle'"
+                            @slot_changed="slot_changed"
+                            @signal_changed="signal_changed" />
+                    </div>
+                    <div v-if="slides[curr_slide_id]['components'][c_id].type_name === 'Rectangle'">
+                        <Property :index="index" :c_id="c_id" :s_id="curr_slide_id" :type="'Rectangle'"
+                            @slot_changed="slot_changed"
+                            @signal_changed="signal_changed" />
+                    </div>
+                    <div v-if="slides[curr_slide_id]['components'][c_id].type_name === 'Slider'">
+                        <Property :index="index" :c_id="c_id" :s_id="curr_slide_id" :type="'Slider'"
+                            @slot_changed="slot_changed"
+                            @signal_changed="signal_changed" />
                     </div>
                 </v-list-item-content>
             </v-list-item>
-         </v-list>
+        </v-list>
+        <v-btn
+            v-if="validSlotsSignals()"
+            color="primary"
+            @click="addConnection()"
+            >
+            Connect
+        </v-btn>
     </v-navigation-drawer>
 
     <v-app-bar app clipped-left clipped-right permanent>
 
-        <v-toolbar-title>Huddle(Slide:{{ curr_slide_id }}, Role: {{role}}) </v-toolbar-title>
+        <v-toolbar-title>Huddle (Slide:{{ curr_slide_id }}, Role: {{role}}) </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-tooltip bottom>
-             <template v-slot:activator="{ on, attrs }">
+            <template v-slot:activator="{ on, attrs }">
                 <v-btn icon v-bind="attrs" v-on="on" id="rectangle" draggable v-on:dragstart="dragStart" v-on:dragend="dragEnd">
                     <v-icon>mdi-square</v-icon>
                 </v-btn>
-             </template>
-             <span>New Rectangle</span>
+            </template>
+            <span>New Rectangle</span>
         </v-tooltip>
         <v-tooltip bottom>
              <template v-slot:activator="{ on, attrs }">
@@ -98,17 +123,17 @@
                             <Textbox :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :text="c.text" 
                                 :style="style"/>
                         </div>
-                        <div v-else-if="c.type_name === 'Circle'" draggable 
+                        <div v-else-if="c.type_name === 'Circle'" draggable v-on:click="widgetClicked($event, c.s_id, c.c_id)"
                             v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
                             <MyCircle :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :r="c.r" 
                                 :style="style"/>
                         </div>
-                        <div v-else-if="c.type_name == 'Rectangle'" draggable 
+                        <div v-else-if="c.type_name == 'Rectangle'" draggable v-on:click="widgetClicked($event, c.s_id, c.c_id)"
                             v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
                             <MyRect :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :w="c.w" :l="c.l" 
                                 :style="style"/>
                         </div>
-                        <div v-else-if="c.type_name == 'Slider'" draggable 
+                        <div v-else-if="c.type_name == 'Slider'" draggable v-on:click="widgetClicked($event, c.s_id, c.c_id)"
                             v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
                             <Slider :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :value="c.value" 
                                 @value_changed="value_changed" :style="style"/>
@@ -128,7 +153,7 @@ import PermissionModal from '@/components/app/PermissionModal';
 import {mapState, mapMutations} from 'vuex';
 import fullscreen from 'vue-fullscreen';
 import Vue from 'vue';
-import TextboxProperty from '../components/properties/TextboxProperty.vue';
+import Property from '../components/properties/Property.vue';
 import Textbox from '../components/widgets/Textbox.vue';
 import Circle from '../components/widgets/Circle.vue';
 import Rect from '../components/widgets/Rect.vue';
@@ -147,7 +172,10 @@ export default {
         scale: 1,
         fields: [],
         count: 0,
+
         selected_widgets: [],
+        selected_slot: {},
+        selected_signal: {},
 
         // Dragging elements state
         preview: null,
@@ -179,6 +207,9 @@ export default {
         ...mapMutations(['set_room']),
         update_slide(id) {
             this.curr_slide_id = id;
+            this.selected_widgets = [];
+            this.selected_slot = {};
+            this.selected_signal = {};
         },
         append_slide() {
             const params = {
@@ -234,6 +265,14 @@ export default {
             }
             this.$socket.emit('update_component_id', params)
         },
+        signal_changed: function(value) {
+            this.selected_signal = value;
+            console.log(this.selected_signal);
+        },
+        slot_changed: function(value) {
+            this.selected_slot = value;
+            console.log(this.selected_slot);
+        },
         toggle() {
             this.$refs['fullscreen'].toggle()
         },
@@ -287,9 +326,6 @@ export default {
                     component: this.preview
                 }
                 this.$socket.emit('new_component', params)
-                if (this.slides[this.curr_slide_id]["next_c_id"] === 2) {
-                    this.addConnection(this.curr_slide_id, 0, 1, 0, 0)
-                }
             }
             this.preview = null;
         },
@@ -319,28 +355,32 @@ export default {
                 }
             }
         },
-        addConnection(s_id, c_id0, c_id1, signal, slot) {
+        addConnection() {
             const params = {
                 uid: this.$store.getters.uid,
                 room: this.$store.getters.room,
-                s_id: s_id,
-                c_id0: c_id0,
-                c_id1: c_id1,
-                signal: signal,
-                slot, slot
+                s_id: this.curr_slide_id,
+                c_id0: this.selected_signal.c_id,
+                c_id1: this.selected_slot.c_id,
+                signal: this.selected_signal.signal,
+                slot: this.selected_slot.slot
             }
             this.$socket.emit('new_connection', params)
-
+        },
+        validSlotsSignals() {
+            var valid_signal = Object.keys(this.selected_signal).length != 0;
+            var valid_slot = Object.keys(this.selected_slot).length != 0;
+            return this.selected_widgets.length == 2 && valid_signal && valid_slot;
         }
     },
     components: {
         Slide,
         Textbox,
-        TextboxProperty,
         'MyCircle': Circle,
         'MyRect': Rect,
         Slider,
-        PermissionModal
+        PermissionModal,
+        Property
     },
     computed: {
         ...mapState(['workspace']),
