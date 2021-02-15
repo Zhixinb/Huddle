@@ -1,21 +1,19 @@
 <template>
   <v-fade-transition appear>
-    <v-card>
-      <div>
-          <v-text-field
-            label="User"
-            placeholder="uid"
-            v-model="curr_uid"
-            outlined
-          ></v-text-field>
-          <h3> Current uid: {{uid}} </h3>
-      </div>
-    </v-card>
+    <div class="pa-6">
+        <h1 class="pb-6 text-center">Welcome to Huddle</h1>
+        <v-text-field
+        label="User"
+        placeholder="uid"
+        v-model="curr_uid"
+        outlined
+        ></v-text-field>
+        <h3> Current UID: {{uid}} </h3>
+    </div>
   </v-fade-transition>
 </template>
 
 <script>
-
 import {mapState} from 'vuex'
 
 export default {

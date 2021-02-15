@@ -11,7 +11,6 @@ function Widget(c_id, s_id, x, y, type_name) {
     this.x = x;
     this.y = y;
     this.type_name = type_name;
-    this.connections = []
 }
 
 
@@ -107,7 +106,7 @@ Slider.prototype = Object.create(Widget.prototype)
 Slider.prototype.constructor = Slider;
 
 Slider.signals = [
-    ["value_changed"]
+    "value_changed"
 ]
 Slider.slots = [];
 

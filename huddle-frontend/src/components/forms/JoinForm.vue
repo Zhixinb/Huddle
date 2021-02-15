@@ -1,22 +1,13 @@
 <template>
   <v-fade-transition appear>
+    <v-card>
     <v-form
       id="join-form"
       ref="form"
       v-model='valid_form'
       @submit.prevent="join_room"
     >
-      <v-card>
-        <v-card-actions>
-          <v-btn
-            block
-            color="primary"
-            large
-            type="submit"
-            id="join-btn"
-            :disabled='!valid_form'
-          >join</v-btn>
-        </v-card-actions>
+      <div class="pa-6">
         <v-card-text>
           <v-text-field
             label="Room ID"
@@ -27,21 +18,50 @@
             outlined
           ></v-text-field>
         </v-card-text>
-      </v-card>
+        <v-card-actions>
+            <v-btn
+                block
+                color="primary"
+                large
+                type="submit"
+                id="join-btn"
+                :disabled='!valid_form'
+            >join</v-btn>
+        </v-card-actions>
+      </div>
     </v-form>
+    <div class="pb-6 pr-6 pl-6">
+      <h3> List of Rooms </h3>
+      <v-list rounded style="max-height: 200px" class="overflow-y-auto">
+        <v-list-item-group color="primary">
+            <v-list-item v-for="(ws_id, index) in workspace_list" :key="index" @click="clicked(ws_id)">
+            <v-list-item-icon>
+                <v-icon>mdi-account</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+                <v-list-item-title>{{ ws_id }}</v-list-item-title>
+            </v-list-item-content>
+            </v-list-item>
+        </v-list-item-group>
+        </v-list>
+    </div>
+    </v-card>
   </v-fade-transition>
 </template>
 
 <script>
-import {mapMutations} from 'vuex'
+import {mapState, mapMutations} from 'vuex'
 export default {
   name: 'join-form',
-  data: () => ({
-    code_length: 5,
-    valid_form: false,
-    curr_room_id: ''
-  }),
+  data() {
+        return {
+            code_length: 5,
+            valid_form: false,
+            curr_room_id: ''
+        }
+  },
   computed: {
+    ...mapState(['workspace_list']),
     rules () {
       const rules = []
       if (this.code_length) {
@@ -73,6 +93,9 @@ export default {
         }
         this.$socket.emit('get_enter_room_perm', params)
       }
+    },
+    clicked(ws_id) {
+        this.curr_room_id = ws_id;
     }
   },
   sockets: {
