@@ -11,7 +11,7 @@
         </v-list>
     </v-navigation-drawer>
 
-    <v-navigation-drawer app clipped right>
+    <v-navigation-drawer app clipped right v-if="can_share">
         <v-list>
             <v-list-item v-for="(c_id, index) in this.selected_widgets" :key="c_id" link>
                 <v-list-item-content>
@@ -48,14 +48,13 @@
             Connect
         </v-btn>
     </v-navigation-drawer>
-
+    
     <v-app-bar app clipped-left clipped-right permanent>
-
         <v-toolbar-title>Huddle (Slide:{{ curr_slide_id }}, Role: {{role}}) </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-tooltip bottom>
             <template v-slot:activator="{ on, attrs }">
-                <v-btn icon v-bind="attrs" v-on="on" id="rectangle" draggable v-on:dragstart="dragStart" v-on:dragend="dragEnd">
+                <v-btn icon v-bind="attrs" v-on="on" id="rectangle" draggable v-on:dragstart="dragStart" v-on:dragend="dragEnd" :disabled='!can_share'>
                     <v-icon>mdi-square</v-icon>
                 </v-btn>
             </template>
@@ -63,7 +62,7 @@
         </v-tooltip>
         <v-tooltip bottom>
              <template v-slot:activator="{ on, attrs }">
-                <v-btn icon v-bind="attrs" v-on="on" id="circle" draggable v-on:dragstart="dragStart" v-on:dragend="dragEnd">
+                <v-btn icon v-bind="attrs" v-on="on" id="circle" draggable v-on:dragstart="dragStart" v-on:dragend="dragEnd" :disabled='!can_share'>
                     <v-icon>mdi-circle</v-icon>
                 </v-btn>
              </template>
@@ -71,7 +70,7 @@
         </v-tooltip>
         <v-tooltip bottom>
              <template v-slot:activator="{ on, attrs }">
-                <v-btn icon v-bind="attrs" v-on="on" id="textbox" draggable v-on:dragstart="dragStart" v-on:dragend="dragEnd">
+                <v-btn icon v-bind="attrs" v-on="on" id="textbox" draggable v-on:dragstart="dragStart" v-on:dragend="dragEnd" :disabled='!can_share'>
                     <v-icon>mdi-format-textbox</v-icon>
                 </v-btn>
              </template>
@@ -79,7 +78,7 @@
         </v-tooltip>
         <v-tooltip bottom>
              <template v-slot:activator="{ on, attrs }">
-                <v-btn icon v-bind="attrs" v-on="on" id="slider" draggable v-on:dragstart="dragStart" v-on:dragend="dragEnd">
+                <v-btn icon v-bind="attrs" v-on="on" id="slider" draggable v-on:dragstart="dragStart" v-on:dragend="dragEnd" :disabled='!can_share'>
                     <v-icon>mdi-textbox</v-icon>
                 </v-btn>
              </template>
@@ -87,7 +86,7 @@
         </v-tooltip>
         <v-tooltip bottom>
              <template v-slot:activator="{ on, attrs }">
-                <v-btn icon v-bind="attrs" v-on="on" @click.stop="append_slide">
+                <v-btn icon v-bind="attrs" v-on="on" @click.stop="append_slide" :disabled='!can_share'>
                     <v-icon>mdi-plus</v-icon>
                 </v-btn>
              </template>
@@ -102,8 +101,9 @@
              <span>Fullscreen</span>
         </v-tooltip>
         <permission-modal/>
+        <user-dropdown></user-dropdown>
     </v-app-bar>
-
+   
     <div class="pa-5">
         <v-fade-transition appear>
             <v-card id ="graph-wrapper" :width="w" :height="h" v-on:dragover="dragOver">
@@ -148,6 +148,7 @@
 </template>
 
 <script>
+import AppNav from '@/components/app/Nav'
 import Slide from '@/components/app/Slide';
 import PermissionModal from '@/components/app/PermissionModal';
 import {mapState, mapMutations} from 'vuex';
@@ -160,6 +161,7 @@ import Rect from '../components/widgets/Rect.vue';
 import Slider from '../components/widgets/Slider.vue'
 import {Widget, Circle as CircleWidget, Rectangle as RectWidget, 
         Textbox as TextWidget, Slider as SliderWidget} from '../models/widget.js';
+import UserDropdown from '../components/app/UserDropdown.vue';
 
 Vue.use(fullscreen);
 
@@ -184,6 +186,10 @@ export default {
         
     }),
     created() {
+        if (this.$store.getters.uid === null) {
+            console.log("user not logged in")
+            this.redirectToLogin();
+        }
     },
     beforeMount () {
         const params = {
@@ -371,6 +377,9 @@ export default {
             var valid_signal = Object.keys(this.selected_signal).length != 0;
             var valid_slot = Object.keys(this.selected_slot).length != 0;
             return this.selected_widgets.length == 2 && valid_signal && valid_slot;
+        },
+        async redirectToLogin() {
+            this.$router.push({ name: 'Login'})
         }
     },
     components: {
@@ -380,16 +389,26 @@ export default {
         'MyRect': Rect,
         Slider,
         PermissionModal,
-        Property
+        Property,
+        AppNav,
+        UserDropdown
     },
     computed: {
         ...mapState(['workspace']),
-        ...mapState('ws', ['role', 'slides']),
+        ...mapState('ws', ['role', 'slides', 'can_share']),
         style () {
             return {
                 transform: 'scale(' + this.scale + ')',
                 transformOrigin: 'top left'
             }
+        }
+    },
+    watch: {
+        role (newState) {
+        if (newState === 'PERM_DENIED') {
+            console.log("User doesn't have permission, redirected to home")
+            this.$router.push({ name: 'Home'})
+        }
         }
     }
 }

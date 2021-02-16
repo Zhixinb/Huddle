@@ -10,6 +10,10 @@ import vuetify from '@/plugins/vuetify'
 import io from 'socket.io-client'
 import VueSocketIO from 'vue-socket.io'
 
+import Amplify from 'aws-amplify';
+import awsconfig from './aws-exports'; 
+Amplify.configure(awsconfig);
+
 Vue.config.productionTip = false
 
 Vue.use(new VueSocketIO({

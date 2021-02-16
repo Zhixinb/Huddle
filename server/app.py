@@ -88,18 +88,16 @@ def on_get_share_state(data):
     if room in ROOMS:
         ws = ROOMS[room]
 
-        if uid in ROOMS[room].user_perms:
-            user_room = [room_key for room_key,
-                        workspace in ROOMS.items() if workspace.has_access(uid)]
+        if uid in ROOMS[room].user_perms:            
             emit('share_state_result', {'whitelist': ws.get_user_perms(),
                                         'global_share_state': ws.global_share_state,
-                                        'can_share': True,
+                                        'can_share': ws.get_can_share(uid),
                                         'permission_map': Workspace.getPermissionDict(),
                                         'role': ws.get_role(uid)})
         else:
             emit('share_state_result', {'whitelist': [],
                                         'global_share_state': {},
-                                        'can_share': False,
+                                        'can_share': ws.get_can_share(uid),
                                         'permission_map': Workspace.getPermissionDict(),
                                         'role':  ws.get_role(uid)})
 
@@ -139,16 +137,16 @@ def on_update_whitelist(data):
 
         role_uid = str(listing['uid'])
         if action == 'add':
-            ws.user_perms[role_uid] = listing['perm']
+            ws.user_perms[role_uid] = Permission(int(listing['perm']))
         elif action == 'remove':
             del ws.user_perms[str(listing['uid'])]
         emit('update_whitelist_result', {'whitelist': ws.get_user_perms(),
                                     'global_share_state': ws.global_share_state,
-                                    'can_share': True,
+                                    'can_share': ws.get_can_share(uid),
                                     'permission_map': Workspace.getPermissionDict(),
                                     'target_uid': role_uid,
                                     'new_role': ws.get_role(role_uid),
-                                    'new_can_share': role_uid in ROOMS[room].user_perms}, room=room)        
+                                    'new_can_share': ws.get_can_share(role_uid)}, room=room)        
     else:
         emit('error', {'error': 'Unable to update whitelist'})
 

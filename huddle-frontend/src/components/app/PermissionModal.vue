@@ -2,7 +2,7 @@
   <v-dialog
       v-model="dialog"
       persistent
-      max-width="400"
+      max-width="500"
     >
       <template v-slot:activator="{ on, attrs }">
         <v-btn
@@ -22,8 +22,27 @@
           Share with people
         </v-card-title>
         <v-form v-on:submit.prevent='addListing' class="flex">
-          <v-text-field type='text' v-model='new_uid'></v-text-field>
-          <v-btn type='submit' color='secondary' large>Add</v-btn>
+          <v-container fill-height fluid>
+
+            <v-row align="center">
+              <v-col cols="5">
+                <v-text-field type='text' v-model="new_uid" label='Add user email' hide-details="auto" dense></v-text-field>
+              </v-col>
+              <v-col cols="4" pa-0 ma-0>
+                <v-select
+                  v-model="selected_perm_string"
+                  :items="perm_strings"
+                  menu-props="auto"
+                  hide-details="auto"
+                  single-line
+                  dense
+              ></v-select>     
+              </v-col>
+              <v-col>
+                <v-btn type='submit' color='secondary'>Add</v-btn>
+              </v-col>
+            </v-row>
+          </v-container>
         </v-form>
         <ul>
           <li v-for="(listing, index) in whitelist" :key="index">
@@ -46,6 +65,16 @@
             <v-card-text v-else>Restricted</v-card-text>
           </template>
         </v-switch>
+        
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn v-clipboard:copy="room"
+            v-bind="attrs"
+              v-on="on"
+                      small>Room code: {{room}}</v-btn>            
+          </template>
+          <span>Copy to clipboard</span>
+        </v-tooltip>
 
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -63,12 +92,21 @@
 
 <script>
 import {mapState} from 'vuex'
+import Vue from 'vue'
+import VueClipboard from 'vue-clipboard2'
+
+VueClipboard.config.autoSetContainer = true
+Vue.use(VueClipboard)
+
 export default {
   name: 'PermissonModal',
   data: () => ({
+    
     dialog: false,
     new_uid: '',
-    new_perm: 1 // TODO: add perm dropdown with proper perm promotion rules (e.g. can only promote up to own role's level, exclude OWNER)
+    selected_perm_string: '',
+    new_perm: -1,
+    perm_strings: []
   }),
   methods: {
     onClick () {
@@ -91,10 +129,10 @@ export default {
           listing: listing,
           action: 'add'
         }
+        console.log("perm to send for updating whitelist:" + JSON.stringify(params))
         this.$socket.emit('update_whitelist', params)
 
-        this.new_uid = '' // clear input
-      // this.new_perm = '' // TODO: undo comment when dynamically choosing perm level
+        this.new_uid = '' // clear input        
       }
     },
     deleteListing (listing) {
@@ -119,6 +157,7 @@ export default {
   },
   computed: {
     ...mapState('ws', ['whitelist', 'global_share_state', 'permission_map', 'can_share', 'role']),
+    ...mapState(['room']),
     globalShareSwitch: {
       get () {
         return this.global_share_state !== this.permission_map.PERM_DENIED
@@ -145,7 +184,17 @@ export default {
         room: this.$route.params.room
       }
       this.$socket.emit('get_share_state', params)
+    },
+    selected_perm_string (newState) {
+      this.new_perm = this.permission_map[newState]
     }
+  },
+  created() {
+    // TODO: check user's permssion level and remove/modify the perm_strings to remove disallowed perms
+    // this.perm_strings = Object.keys(this.permission_map)
+    this.perm_strings = ['EDITOR', 'VIEWER']
+    this.selected_perm_string = 'VIEWER'
+    this.new_perm = 2
   }
 }
 </script>

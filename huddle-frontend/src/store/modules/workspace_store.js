@@ -49,12 +49,10 @@ export default ({
     WS_share_state_result (context, message) {
       context.commit('set_whitelist', message.whitelist)
       console.log('whitelist:' + JSON.stringify(message.whitelist))
-      if (JSON.stringify(context.getters.global_share_state) !== JSON.stringify(message.global_share_state)) {
-        context.commit('set_global_share_state', message.global_share_state)
-      }
-      if (JSON.stringify(context.getters.can_share) !== JSON.stringify(message.can_share)) {
-        context.commit('set_can_share', message.can_share)
-      }
+      
+      context.commit('set_global_share_state', message.global_share_state)
+      
+      context.commit('set_can_share', message.can_share)
       context.commit('set_permission_map', message.permission_map)
       context.commit('set_role', message.role)
     },
@@ -67,12 +65,13 @@ export default ({
       context.commit('set_whitelist', message.whitelist)
       console.log('whitelist:' + JSON.stringify(message.whitelist))
       context.commit('set_global_share_state', message.global_share_state)
-      context.commit('set_can_share', message.can_share)
       context.commit('set_permission_map', message.permission_map)
-
+      
       if (message.target_uid === context.rootGetters.uid) {
         context.commit('set_role', message.new_role)
         context.commit('set_can_share', message.new_can_share)
+      } else {
+        context.commit('set_can_share', message.can_share)
       }
     },
     WS_update_slides_result (context, message) {
