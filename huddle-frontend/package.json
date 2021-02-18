@@ -11,12 +11,14 @@
     "build": "node build/build.js"
   },
   "dependencies": {
+    "aws-amplify": "^3.0.8",
     "d3": "^6.3.1",
     "idle-vue": "^2.0.5",
     "mxgraph": "^4.2.2",
     "socket.io-client": "^2.3.1",
     "v-movable": "^0.3.2",
     "vue": "^2.5.2",
+    "vue-clipboard2": "^0.3.1",
     "vue-fullscreen": "^2.1.6",
     "vue-router": "^3.0.1",
     "vue-socket.io": "^3.0.10",

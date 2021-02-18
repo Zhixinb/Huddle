@@ -70,6 +70,12 @@ class Workspace(object):
         perm = self.get_user_perm(uid)
         return Permission(perm).name
 
+    def get_can_share(self, uid):
+        # only owner, editor can share
+        perm = self.get_user_perm(uid)
+        
+        return (perm is Permission.OWNER) or (perm is Permission.EDITOR)
+
     @classmethod
     def generate_workspace_id(cls):
         """Generate a random workspace ID"""

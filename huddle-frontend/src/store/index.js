@@ -12,6 +12,7 @@ export default new Vuex.Store({
     disconnected: false,
     disconnect_delay: null,
 
+    email: '',
     uid: null,
     sid: null,
     workspace_list: [],
@@ -28,11 +29,8 @@ export default new Vuex.Store({
       }
     },
     uid (state) {
-      if (state.uid) {
-        return state.uid
-      } else {
-        return 'Unknown uid'
-      }
+      // If uid is null, then no authenticated user is signed in
+      return state.uid
     },
     room (state) {
       if (state.room) {
@@ -40,11 +38,21 @@ export default new Vuex.Store({
       } else {
         return 'Unknown room'
       }
+    },
+    email (state) {
+      if (state.email) {
+        return state.email
+      } else {
+        return 'Unknown email'
+      }
     }
   },
   mutations: {
     set_connected (state, payload) {
       state.connected = payload
+    },
+    set_email (state, payload) {
+      state.email = payload
     },
     set_sid (state, payload) {
       state.sid = payload

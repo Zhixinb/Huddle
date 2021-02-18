@@ -1,32 +1,22 @@
 <template>
-  <v-fade-transition appear>
-    <div class="pa-6">
-        <h1 class="pb-6 text-center">Welcome to Huddle</h1>
-        <v-text-field
-        label="User"
-        placeholder="uid"
-        v-model="curr_uid"
-        outlined
-        ></v-text-field>
-        <h3> Current UID: {{uid}} </h3>
-    </div>
-  </v-fade-transition>
+
+  <v-app-bar color="light-blue accent-4" dense>
+    <v-btn icon @click='redirectToHome'><v-icon>mdi-home</v-icon></v-btn>
+    <v-spacer></v-spacer>
+    <user-dropdown></user-dropdown>
+  </v-app-bar>
 </template>
 
 <script>
-import {mapState} from 'vuex'
+
+import UserDropdown from './UserDropdown.vue'
 
 export default {
-  data: () => ({
-    curr_uid: ''
-  }),
-  computed: {
-    ...mapState(['uid'])
-  },
-  watch: {
-    curr_uid: {
-      handler (newVal) {
-        this.$store.commit('set_uid', this.curr_uid)
+  components: { UserDropdown },    
+  methods: {
+    redirectToHome() {
+      if (this.$route.path !== '/home') {
+        this.$router.push({ name: 'Home'})
       }
     }
   }

@@ -107,6 +107,13 @@ export default {
       } else {
         this.$router.push({ name: 'Error', params: { msg: 'No access to Room ' + this.room_id } })
       }
+    },
+    created() {
+      const params = {
+          uid: this.$store.getters.uid
+        }
+
+      this.$socket.emit('get_rooms', params)
     }
   }
 }

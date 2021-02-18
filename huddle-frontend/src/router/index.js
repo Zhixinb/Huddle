@@ -1,8 +1,10 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+import LandingPage from '@/views/LandingPage'
 import Home from '@/views/Home'
 import Workspace from '@/views/Workspace'
 import ErrorPage from '@/views/ErrorPage'
+import Login from '@/views/Login'
 
 Vue.use(Router)
 
@@ -10,12 +12,13 @@ export default new Router({
   routes: [
     {
       path: '/',
-      name: 'Home',
-      component: Home
+      name: 'LandingPage',
+      component: LandingPage
     },
     {
       path: '/home',
-      redirect: '/'
+      name: 'Home',
+      component: Home
     },
     {
       path: '/workspace/:room',
@@ -26,6 +29,11 @@ export default new Router({
       path: '/error',
       name: 'Error',
       component: ErrorPage
+    },
+    {
+      path: '/login',
+      name: 'Login',
+      component: Login
     }
   ]
 })
