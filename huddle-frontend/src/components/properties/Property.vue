@@ -30,8 +30,8 @@ export default {
     props: {
         index: Number,
         type: String,
-        c_id: Number,
-        s_id: Number,
+        c_id: String,
+        s_id: String,
         t: String
     },
     data() {
@@ -45,17 +45,17 @@ export default {
     },
     mounted() {
         if (this.type === 'Textbox') {
-            this.slots = TextWidget.slots.map(element => element[0]);
-            this.signals = TextWidget.signals;
+            this.slots = Object.keys(TextWidget.slots);
+            this.signals = Object.keys(TextWidget.signals);
         } else if (this.type === 'Circle') {
-            this.slots = CircleWidget.slots.map(element => element[0]);
-            this.signals = CircleWidget.signals;
+            this.slots = Object.keys(CircleWidget.slots);
+            this.signals = Object.keys(CircleWidget.signals);
         } else if (this.type === 'Rectangle') {
-            this.slots = RectWidget.slots.map(element => element[0]);
-            this.signals = RectWidget.signals;
+            this.slots = Object.keys(RectWidget.slots);
+            this.signals = Object.keys(RectWidget.signals);
         } else if (this.type === 'Slider') {
-            this.slots = SliderWidget.slots.map(element => element[0]);
-            this.signals = SliderWidget.signals;
+            this.slots = Object.keys(SliderWidget.slots);
+            this.signals = Object.keys(SliderWidget.signals);
         } else {
             console.log('Error fetching slots and signals')
         }
@@ -67,20 +67,10 @@ export default {
             this.$emit('text_changed', {c_id: this.c_id, s_id: this.s_id, text: event})
         },
         selected_signal(event) {
-            var signal_id = this.signals.indexOf(this.selectedSignal);
-            if (signal_id != -1) {
-                this.$emit('signal_changed', {c_id: this.c_id, s_id: this.s_id, signal: signal_id})
-            } else {
-                console.log('Signal ID error');
-            }
+            this.$emit('signal_changed', event)
         },
         selected_slot(event) {
-            var slot_id = this.slots.indexOf(this.selectedSlot);
-            if (slot_id != -1) {
-            this.$emit('slot_changed', {c_id: this.c_id, s_id: this.s_id, slot: slot_id})
-            } else {
-                console.log('Slot ID error');
-            }
+            this.$emit('slot_changed', event)
         }
     }
 

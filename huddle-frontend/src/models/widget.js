@@ -14,11 +14,11 @@ function Widget(c_id, s_id, x, y, type_name) {
 }
 
 
-Widget.signals = [
-]
+Widget.signals = {
+}
 
-Widget.slots = [
-]
+Widget.slots = {
+}
 
 Widget.mapSlot = function(widget, slot, args) {
     if (widget === "Textbox") {
@@ -54,14 +54,14 @@ function Circle(c_id, s_id, x, y, r) {
 Circle.prototype = Object.create(Widget.prototype)
 Circle.prototype.constructor = Circle;
 
-Circle.signals = [
-]
+Circle.signals = {
+}
 
-Circle.slots = [
-    ["update_radius", function(value) {
+Circle.slots = {
+    "update_radius": function(value) {
         return {"r": value / 2}
-    }]
-]
+    }
+}
 
 function Rectangle(c_id, s_id, x, y, w, l) {
     Widget.call(this, c_id, s_id, x, y, "Rectangle");
@@ -72,17 +72,17 @@ function Rectangle(c_id, s_id, x, y, w, l) {
 Rectangle.prototype = Object.create(Widget.prototype)
 Rectangle.prototype.constructor = Rectangle;
 
-Rectangle.signals = [
-]
+Rectangle.signals = {
+}
 
-Rectangle.slots = [
-    ["update_width", function(value) {
+Rectangle.slots = {
+    "update_width":  function(value) {
         return {"w": value / 2}
-    }],
-    ["update_length", function(value) {
+    },
+    "update_length": function(value) {
         return {"l": value / 2}
-    }]
-]
+    }
+}
 
 function Textbox(c_id, s_id, x, y, text) {
     Widget.call(this, c_id, s_id, x, y, "Textbox");
@@ -92,10 +92,11 @@ function Textbox(c_id, s_id, x, y, text) {
 Textbox.prototype = Object.create(Widget.prototype)
 Textbox.prototype.constructor = Textbox;
 
-Textbox.signals = [
-]
-Textbox.slots = [
-]
+Textbox.signals = {
+}
+
+Textbox.slots = {
+}
 
 function Slider(c_id, s_id, x, y, value) {
     Widget.call(this, c_id, s_id, x, y, "Slider");
@@ -105,9 +106,13 @@ function Slider(c_id, s_id, x, y, value) {
 Slider.prototype = Object.create(Widget.prototype)
 Slider.prototype.constructor = Slider;
 
-Slider.signals = [
-    "value_changed"
-]
-Slider.slots = [];
+Slider.signals = {
+    "value_changed": function (slider) {
+        return slider.value
+    }
+}
+Slider.slots = {
+
+}
 
 export {Widget, Circle, Rectangle, Textbox, Slider};

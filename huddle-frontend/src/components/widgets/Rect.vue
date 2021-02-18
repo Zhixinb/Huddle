@@ -11,10 +11,10 @@ export default {
     name: 'RectWidget',
     props: {
         c_id: {
-            type: Number
+            type: String
         },
         s_id: {
-            type: Number
+            type: String
         },
         x: {
             type: Number,
