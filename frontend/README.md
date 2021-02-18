@@ -1,10 +1,10 @@
-# huddle-frontend
+# frontend
 
 > Frontend client for Huddle
 
 ## Build Setup
 
-``` bash
+```bash
 # install dependencies
 npm install
 

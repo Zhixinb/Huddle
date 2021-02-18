@@ -16,9 +16,17 @@ Amplify.configure(awsconfig);
 
 Vue.config.productionTip = false
 
+// var allowedOrigins = "http://localhost:* http://127.0.0.1:*";
+// console.log(`//${window.location.host}`)
+var hostname = window.location.hostname === 'localhost' ? '127.0.0.1' : window.location.hostname
+
 Vue.use(new VueSocketIO({
   debug: true,
-  connection: io('http://127.0.0.1:5000'),
+  // http://huddle-backend.us-east-1.elasticbeanstalk.com/
+  // io('http://127.0.0.1:5000'), // Works for dev
+  // io('http://huddle-backend.us-east-1.elasticbeanstalk.com'),
+  // try: io(`//${window.location.host}`), // maybe for production?
+  connection: io(`http://${hostname}:5000`),
   vuex: {
     store,
     actionPrefix: 'WS_',
