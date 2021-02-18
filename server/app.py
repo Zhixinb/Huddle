@@ -4,6 +4,7 @@ from huddle.router import Router
 from huddle.workspace import Workspace, Permission
 import sys
 import json
+import ast
 
 # initialize Flask
 app = Flask(__name__)
@@ -243,6 +244,29 @@ def on_new_connection(data):
                 'new_state': room_data}, room=room)      
     else:
         emit('error', {'error': 'Unable to create new widget'})
+
+@socketio.on('upload_json')
+def on_upload_json(data):
+    uid = data['uid']
+    room = data['room']
+
+    if room in ROOMS:
+        router = ROUTERS[room]
+        slides_file = data['slides_file']
+        dict_str = slides_file.decode("UTF-8")
+        decoded_data = ast.literal_eval(dict_str)
+
+        # print(type(decoded_data))
+        # print(decoded_data)
+
+        router.update_state(decoded_data)
+        room_data = router.get_state()
+
+        emit('update_slides_result', {
+            'new_state': room_data}, room=room)
+             
+    else:
+        emit('error', {'error': 'Unable to upload json file'})
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', debug=True)

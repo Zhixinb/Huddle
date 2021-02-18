@@ -1,0 +1,37 @@
+{
+  "providers": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-huddlefrontend-huddle-215946-authRole",
+      "UnauthRoleArn": "arn:aws:iam::416374928065:role/amplify-huddlefrontend-huddle-215946-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::416374928065:role/amplify-huddlefrontend-huddle-215946-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-huddlefrontend-huddle-215946-deployment",
+      "UnauthRoleName": "amplify-huddlefrontend-huddle-215946-unauthRole",
+      "StackName": "amplify-huddlefrontend-huddle-215946",
+      "StackId": "arn:aws:cloudformation:us-east-1:416374928065:stack/amplify-huddlefrontend-huddle-215946/5d766c80-7195-11eb-9c8e-1231d953c74d",
+      "AmplifyAppId": "d3dbm399b1p6gz"
+    }
+  },
+  "auth": {
+    "huddlefrontenda7f4bc3e": {
+      "service": "Cognito",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [],
+      "customAuth": false,
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-huddlefrontend-huddle-215946-deployment/amplify-cfn-templates/auth/huddlefrontenda7f4bc3e-cloudformation-template.yml",
+        "logicalId": "authhuddlefrontenda7f4bc3e"
+      },
+      "lastPushTimeStamp": "2021-02-18T03:07:24.019Z",
+      "output": {
+        "UserPoolId": "us-east-1_ytbitHhaE",
+        "AppClientIDWeb": "58kpms90bdl6jqjso1qourrki3",
+        "AppClientID": "mlqb74hmva01ikemo69sctq5q",
+        "IdentityPoolId": "us-east-1:cda8aac9-f269-4d54-9df2-d6c041c3a26a",
+        "IdentityPoolName": "huddlefrontenda7f4bc3e_identitypool_a7f4bc3e__huddle",
+        "UserPoolName": "huddlefrontenda7f4bc3e_userpool_a7f4bc3e"
+      },
+      "lastPushDirHash": "6uZPIZqZsTnDeg8USt6WikBeNlA="
+    }
+  }
+}

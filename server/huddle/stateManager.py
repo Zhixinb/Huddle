@@ -9,6 +9,7 @@ class StateManager(object):
 
     def update_state(self, new_state):
         self.storedData = new_state
+        #to-do: make sure next_sid stays updated
 
     def getSingleData(self, key):
         if key in self.storedData:
@@ -50,7 +51,8 @@ class StateManager(object):
         return False
 
     def add_new_slide(self):
-        self.storedData[self.next_sid] = {"id": self.next_sid, "components": {}, "connections": {}, "next_c_id": 0}
+        #self.storedData[self.next_sid] = {"id": self.next_sid, "components": {}, "connections": {}, "next_c_id": 0}
+        self.storedData[len(self.storedData)] = {"id": self.next_sid, "components": {}, "connections": {}, "next_c_id": 0}
         self.next_sid += 1
 
     def add_new_connection(self, sid, cid0, cid1, signal, slot):
