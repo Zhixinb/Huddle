@@ -11,7 +11,7 @@
     "build": "node build/build.js"
   },
   "dependencies": {
-    "aws-amplify": "^3.3.19",
+    "aws-amplify": "^3.0.8",
     "d3": "^6.3.1",
     "idle-vue": "^2.0.5",
     "mxgraph": "^4.2.2",
