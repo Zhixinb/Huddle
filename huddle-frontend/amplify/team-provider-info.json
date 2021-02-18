@@ -16,5 +16,23 @@
         "huddlefrontenda7f4bc3e": {}
       }
     }
+  },
+  "huddle": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-huddlefrontend-huddle-161922-authRole",
+      "UnauthRoleArn": "arn:aws:iam::391898317545:role/amplify-huddlefrontend-huddle-161922-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::391898317545:role/amplify-huddlefrontend-huddle-161922-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-huddlefrontend-huddle-161922-deployment",
+      "UnauthRoleName": "amplify-huddlefrontend-huddle-161922-unauthRole",
+      "StackName": "amplify-huddlefrontend-huddle-161922",
+      "StackId": "arn:aws:cloudformation:us-east-1:391898317545:stack/amplify-huddlefrontend-huddle-161922/fb2e26e0-722e-11eb-9d87-0a54954134e7",
+      "AmplifyAppId": "dsoo5na4wrfk8"
+    },
+    "categories": {
+      "auth": {
+        "huddlefrontenda7f4bc3e": {}
+      }
+    }
   }
 }

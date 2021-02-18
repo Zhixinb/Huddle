@@ -1,5 +1,5 @@
 {
-  "name": "huddle-frontend",
+  "name": "frontend",
   "version": "1.0.0",
   "description": "Frontend client for Huddle",
   "author": "Zhixin Zhang <r914721222@gmail.com>",
@@ -7,10 +7,19 @@
   "scripts": {
     "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
     "start": "npm run dev",
-    "lint": "eslint --ext .js,.vue src",
-    "build": "node build/build.js"
+    "serve": "npm run dev",
+    "build": "npm run dev",
+    "test": "vue-cli-service e2e --record",
+    "e2e": "vue-cli-service e2e ",
+    "lint": "vue-cli-service lint",
+    "flask": "venv/bin/python server/__init__.py",
+    "gunicorn": "venv/bin/gunicorn --error-logfile - --worker-class eventlet -w 1 server:app -b 0.0.0.0:5000",
+    "setup": "venv/bin/pip install -r requirements.txt && npm install",
+    "e2e:open": "vue-cli-service e2e:open",
+    "test:unit": "vue-cli-service test:unit"
   },
   "dependencies": {
+    "@vue/cli-service": "^4.5.11",
     "aws-amplify": "^3.0.8",
     "d3": "^6.3.1",
     "idle-vue": "^2.0.5",
