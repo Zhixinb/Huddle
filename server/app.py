@@ -2,6 +2,7 @@ from flask import Flask, render_template, jsonify
 from flask_socketio import SocketIO, join_room, leave_room, emit, send
 from huddle.router import Router
 from huddle.workspace import Workspace, Permission
+import os
 import sys
 import json
 
@@ -256,4 +257,5 @@ def on_new_connection(data):
 
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    socketio.run(app, host='0.0.0.0', port=port, debug=True)
