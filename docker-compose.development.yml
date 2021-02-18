@@ -1,17 +1,17 @@
+--- 
+services: 
+  flask: 
+    environment: 
+      FLASK_DEV: development
+    ports: 
+      - "5000:5000"
+    restart: unless-stopped
+    volumes: 
+      - "./server:/app"
+  frontend: 
+    ports: 
+      - "8080:8080"
+    volumes: 
+      - "./frontend:/app"
+      - /app/node_modules
 version: "3.7"
-
-services:
-    flask:
-        restart: unless-stopped
-        environment:
-            FLASK_DEV: development
-        volumes:
-            - ./server:/app
-        ports:
-            - 5000:5000
-    frontend:
-        volumes:
-            - ./frontend:/app
-            - /app/node_modules
-        ports:
-            - 8080:8080
