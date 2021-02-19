@@ -1,0 +1,10 @@
+{
+  "auth": {
+    "huddlefrontend507b5e57": {
+      "service": "Cognito",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [],
+      "customAuth": false
+    }
+  }
+}
