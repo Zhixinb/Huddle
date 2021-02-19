@@ -9,7 +9,7 @@
         <v-btn color="primary" @click="redirectToLogin">Get Started</v-btn>   
     </v-app-bar>
 
-    <v-img :max-height="'calc(100vh - ' + $vuetify.application.top + 'px)'"
+    <v-img :max-height="'calc(100vh - ' + this.$vuetify.application.top + 'px)'"
     src="https://images.unsplash.com/photo-1487017159836-4e23ece2e4cf?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1951&q=80"
     >
     <v-theme-provider dark>
