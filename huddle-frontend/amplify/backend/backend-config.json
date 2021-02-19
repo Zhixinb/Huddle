@@ -1,6 +1,6 @@
 {
   "auth": {
-    "huddlefrontenda7f4bc3e": {
+    "huddlefrontend6e126121": {
       "service": "Cognito",
       "providerPlugin": "awscloudformation",
       "dependsOn": [],
