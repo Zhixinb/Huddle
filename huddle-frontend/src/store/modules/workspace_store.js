@@ -6,7 +6,8 @@ export default ({
     can_share: false,
     permission_map: {},
     slides: {},
-    role: ''
+    role: '',
+    keymap: {}
   },
   getters: {
     whitelist (state) {
@@ -23,6 +24,9 @@ export default ({
     },
     slides (state) {
       return state.slides
+    },
+    keymap (state) {
+      return state.keymap
     }
   },
   mutations: {
@@ -43,7 +47,10 @@ export default ({
     },
     set_slides (state, payload) {
       state.slides = payload
-    }
+    }, 
+    set_keymap (state, payload) {
+      state.keymap = keymap
+    }, 
   },
   actions: {
     WS_share_state_result (context, message) {
@@ -75,7 +82,9 @@ export default ({
       }
     },
     WS_update_slides_result (context, message) {
+      console.log("here1")
       if (JSON.stringify(context.getters.slides) !== JSON.stringify(message.new_state)) {
+        console.log("here2")
         context.commit('set_slides', message.new_state)
       }
     }

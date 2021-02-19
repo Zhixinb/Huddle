@@ -85,6 +85,14 @@
         </v-tooltip>
         <permission-modal/>
         <user-dropdown></user-dropdown>
+        <hotkey-menu/>
+        <v-btn
+           class="ma-2"
+           @click=download_json()>
+           Download
+        </v-btn>
+        <upload-menu>
+        </upload-menu>
     </v-app-bar>
    
     <div class="pa-5">
@@ -134,6 +142,8 @@
 import AppNav from '@/components/app/Nav'
 import Slide from '@/components/app/Slide';
 import PermissionModal from '@/components/app/PermissionModal';
+import HotkeyMenu from '@/components/app/HotkeyMenu';
+import UploadMenu from '@/components/app/UploadMenu';
 import {mapState, mapMutations} from 'vuex';
 import fullscreen from 'vue-fullscreen';
 import Vue from 'vue';
@@ -142,6 +152,7 @@ import Textbox from '../components/widgets/Textbox.vue';
 import Circle from '../components/widgets/Circle.vue';
 import Rect from '../components/widgets/Rect.vue';
 import Slider from '../components/widgets/Slider.vue'
+//import FileSaver from '../plugins/FileSaver.js'
 import {Widget, Circle as CircleWidget, Rectangle as RectWidget, 
         Textbox as TextWidget, Slider as SliderWidget} from '../models/widget.js';
 import UserDropdown from '../components/app/UserDropdown.vue';
@@ -203,6 +214,15 @@ export default {
                 room: this.$store.getters.room,
             }
             this.$socket.emit('new_slide', params)
+        },
+        download_json() {
+            var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.slides));
+            var downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href",     dataStr);
+            downloadAnchorNode.setAttribute("download", "slides_data.json");
+            document.body.appendChild(downloadAnchorNode); // required for firefox
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
         },
         // Signals
         value_changed: function (value) {
@@ -369,7 +389,9 @@ export default {
         PermissionModal,
         Property,
         AppNav,
-        UserDropdown
+        UserDropdown,
+        HotkeyMenu,
+        UploadMenu
     },
     computed: {
         ...mapState(['workspace']),

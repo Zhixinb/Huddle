@@ -13,6 +13,7 @@
   "dependencies": {
     "aws-amplify": "^3.0.8",
     "d3": "^6.3.1",
+    "file-saver": "^2.0.5",
     "idle-vue": "^2.0.5",
     "mxgraph": "^4.2.2",
     "socket.io-client": "^2.3.1",

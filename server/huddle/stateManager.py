@@ -9,6 +9,7 @@ class StateManager(object):
 
     def update_state(self, new_state):
         self.storedData = new_state
+        #to-do: make sure next_sid stays updated
 
     def getSingleData(self, key):
         if key in self.storedData:
