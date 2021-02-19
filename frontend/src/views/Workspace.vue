@@ -102,9 +102,9 @@
                     <Textbox v-if="preview !== null && preview.constructor.name == 'Textbox'"
                         :x="w * preview.x" :y="h * preview.y" :text="preview.text" :style="style"/>
                     <MyCircle v-else-if="preview !== null && preview.constructor.name == 'Circle'" 
-                        :x="w * preview.x" :y="h * preview.y" :r="preview.r" :style="style"/>
+                        :x="w * preview.x" :y="h * preview.y" :radius="preview.radius" :style="style"/>
                     <MyRect v-else-if="preview !== null && preview.constructor.name == 'Rectangle'" 
-                        :x="w * preview.x" :y="h * preview.y" :w="preview.w" :l="preview.l" :style="style"/>
+                        :x="w * preview.x" :y="h * preview.y" :width="preview.width" :length="preview.length" :style="style"/>
                     <Slider v-else-if="preview !== null && preview.constructor.name == 'Slider'" 
                         :x="w * preview.x" :y="h * preview.y" :value="preview.value" :style="style"/>
                   <!-- TODO: fix empty list error, check slides.length before accessing component -->
@@ -116,12 +116,12 @@
                         </div>
                         <div v-else-if="c.type_name === 'Circle'" draggable v-on:click="widgetClicked($event, c.s_id, c.c_id)"
                             v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
-                            <MyCircle :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :r="c.r" 
+                            <MyCircle :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :radius="c.radius" 
                                 :style="style"/>
                         </div>
                         <div v-else-if="c.type_name == 'Rectangle'" draggable v-on:click="widgetClicked($event, c.s_id, c.c_id)"
                             v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
-                            <MyRect :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :w="c.w" :l="c.l" 
+                            <MyRect :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :width="c.width" :length="c.length" 
                                 :style="style"/>
                         </div>
                         <div v-else-if="c.type_name == 'Slider'" draggable v-on:click="widgetClicked($event, c.s_id, c.c_id)"
@@ -224,42 +224,56 @@ export default {
             downloadAnchorNode.click();
             downloadAnchorNode.remove();
         },
+        generate_slot_changes: function(s_id, c_id, changes) {
+            const connections = this.slides[s_id]["connections"]
+            const components = this.slides[s_id]["components"]
+            var value = {
+            }
+            value[c_id] = {}
+            var queue = []
+            for (const signal in changes) {
+                queue.push([c_id, signal])
+                value[c_id][signal] = changes[signal]
+            }
+            while (queue.length > 0) {
+                const [signal_c_id, signal_name] = queue.shift();
+                const signal = signal_name + "_changed"
+                const signal_value = value[signal_c_id][signal_name]
+                const signal_type = components[signal_c_id].type_name
+                if (signal in Widget.signals[signal_type] && signal_c_id in connections && signal in connections[signal_c_id]) {
+                    const slots = connections[signal_c_id][signal];
+                    for (const slot_c_id in slots) {
+                        const slot_type = components[slot_c_id].type_name
+                        for (var i = 0; i < slots[slot_c_id].length; i++) {
+                            const slot = slots[slot_c_id][i]
+                            const slot_changes = Widget.map(signal_type, slot_type, signal, slot, signal_value)
+                            for (const key in slot_changes) {
+                                if (!(slot_c_id in value)) {
+                                    value[slot_c_id] = {}
+                                }
+                                value[slot_c_id][key] = slot_changes[key]
+                                queue.push([slot_c_id, key])
+                            }
+                        }
+                    }
+                }
+            }
+            return value
+        },
         // Signals
         value_changed: function (value) {
             const s_id = value.s_id
-            const c_id0 = value.c_id
+            const c_id = value.c_id
             const v = value.value
-            const signal = value.signal
 
+            const changes = this.generate_slot_changes(s_id, c_id, {"value": v})
             const params = {
                 uid: this.$store.getters.uid,
                 room: this.$store.getters.room,
                 s_id: s_id,
-                c_id: c_id0,
-                changes: {"value": v}
+                changes: changes
             }
-            this.$socket.emit('update_component_id', params)
-            // const connections = this.slides[s_id]["connections"]
-            // const components = this.slides[s_id]["components"]
-            // if (c_id0 in connections && signal in connections[c_id0])
-            // {
-            //     const slots = connections[c_id0][signal];
-            //     for (var i = 0; i < slots.length; i++) {
-            //         const [c_id1, slot] = slots[i];
-
-            //         if (c_id1 in components) {
-            //             const widget = components[c_id1].type_name;
-            //             const params1 = {
-            //                 uid: this.$store.getters.uid,
-            //                 room: this.$store.getters.room,
-            //                 s_id: s_id,
-            //                 c_id: c_id1,
-            //                 changes: Widget.mapSlot(widget, slot, [v])
-            //             }
-            //             this.$socket.emit('update_component_id', params1)
-            //         }
-            //     }
-            // }
+            this.$socket.emit('update_component_id_batch', params)
         },
         text_changed: function (value) {
             const params = {

@@ -22,8 +22,7 @@
 </template>
 
 <script>
-import {Circle as CircleWidget, Rectangle as RectWidget, 
-        Textbox as TextWidget, Slider as SliderWidget} from '../../models/widget.js';
+import {Widget} from '../../models/widget.js';
 
 export default {
     name: 'Property',
@@ -44,21 +43,8 @@ export default {
         }
     },
     mounted() {
-        if (this.type === 'Textbox') {
-            this.slots = Object.keys(TextWidget.slots);
-            this.signals = Object.keys(TextWidget.signals);
-        } else if (this.type === 'Circle') {
-            this.slots = Object.keys(CircleWidget.slots);
-            this.signals = Object.keys(CircleWidget.signals);
-        } else if (this.type === 'Rectangle') {
-            this.slots = Object.keys(RectWidget.slots);
-            this.signals = Object.keys(RectWidget.signals);
-        } else if (this.type === 'Slider') {
-            this.slots = Object.keys(SliderWidget.slots);
-            this.signals = Object.keys(SliderWidget.signals);
-        } else {
-            console.log('Error fetching slots and signals')
-        }
+        this.signals = Object.keys(Widget.signals[this.type]);
+        this.slots = Object.keys(Widget.slots[this.type]);
     },
     methods: {
         text_changed(event) {

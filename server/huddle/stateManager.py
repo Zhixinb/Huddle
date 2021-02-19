@@ -60,14 +60,16 @@ class StateManager(object):
             if cid0 in components and cid1 in components:
                 connections = self.storedData[sid]["connections"]
                 d = connections
-                if (cid0 not in d):
+                if cid0 not in d:
                     d[cid0] = {}
                 d = d[cid0]
-                if (signal not in d):
+                if signal not in d:
                     d[signal] = {}
                 d = d[signal]
-                if (cid1 not in d):
+                if cid1 not in d:
                     d[cid1] = []
-                d[cid1].append(slot)
+                d = d[cid1]
+                if slot not in d:
+                    d.append(slot)
                 return True
         return False
