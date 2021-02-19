@@ -10,7 +10,7 @@ import ast
 # initialize Flask
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(app, cors_allowed_origins=["http://localhost:8080", "https://robin-dev.d1jfi0qjq3gsdb.amplifyapp.com"])
 ROOMS = {}  # dict to track active workspaces
 ROUTERS = {}  # dict to track routers
 
