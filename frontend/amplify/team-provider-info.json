@@ -1,23 +1,37 @@
 {
-<<<<<<< HEAD:huddle-frontend/amplify/team-provider-info.json
-  "huddlefw": {
-=======
   "robinenv": {
->>>>>>> 870763192c2c05cf031ae8cd2a2651f2a75db3ab:frontend/amplify/team-provider-info.json
     "awscloudformation": {
-      "AuthRoleName": "amplify-huddlefrontend-huddlefw-195506-authRole",
-      "UnauthRoleArn": "arn:aws:iam::391898317545:role/amplify-huddlefrontend-huddlefw-195506-unauthRole",
-      "AuthRoleArn": "arn:aws:iam::391898317545:role/amplify-huddlefrontend-huddlefw-195506-authRole",
+      "AuthRoleName": "amplify-huddlefrontend-dev-121735-authRole",
+      "UnauthRoleArn": "arn:aws:iam::304195012407:role/amplify-huddlefrontend-dev-121735-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::304195012407:role/amplify-huddlefrontend-dev-121735-authRole",
       "Region": "us-east-1",
-      "DeploymentBucketName": "amplify-huddlefrontend-huddlefw-195506-deployment",
-      "UnauthRoleName": "amplify-huddlefrontend-huddlefw-195506-unauthRole",
-      "StackName": "amplify-huddlefrontend-huddlefw-195506",
-      "StackId": "arn:aws:cloudformation:us-east-1:391898317545:stack/amplify-huddlefrontend-huddlefw-195506/1d1ead10-724d-11eb-8ff3-12b94cd95a93",
-      "AmplifyAppId": "d22jjw4odlkf8q"
+      "DeploymentBucketName": "amplify-huddlefrontend-dev-121735-deployment",
+      "UnauthRoleName": "amplify-huddlefrontend-dev-121735-unauthRole",
+      "StackName": "amplify-huddlefrontend-dev-121735",
+      "StackId": "arn:aws:cloudformation:us-east-1:304195012407:stack/amplify-huddlefrontend-dev-121735/dd847aa0-707a-11eb-8b3c-0e4f19f4771b",
+      "AmplifyAppId": "d3c0xc3gsra31l"
     },
     "categories": {
       "auth": {
-        "huddlefrontend6e126121": {}
+        "huddlefrontenda7f4bc3e": {}
+      }
+    }
+  },
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-frontend-dev-203823-authRole",
+      "UnauthRoleArn": "arn:aws:iam::391898317545:role/amplify-frontend-dev-203823-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::391898317545:role/amplify-frontend-dev-203823-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-frontend-dev-203823-deployment",
+      "UnauthRoleName": "amplify-frontend-dev-203823-unauthRole",
+      "StackName": "amplify-frontend-dev-203823",
+      "StackId": "arn:aws:cloudformation:us-east-1:391898317545:stack/amplify-frontend-dev-203823/28ba92a0-7253-11eb-9cbf-1208387c923f",
+      "AmplifyAppId": "dsp7e3qlm3vnq"
+    },
+    "categories": {
+      "auth": {
+        "frontend70cb9547": {}
       }
     }
   }

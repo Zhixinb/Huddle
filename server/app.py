@@ -187,27 +187,6 @@ def on_update_slides(data):
     else:
         emit('error', {'error': 'Unable to update slides states'})
 
-<<<<<<< HEAD
-=======
-
-@socketio.on('update_component')
-def on_update_component(data):
-    uid = data['uid']
-    room = data['room']
-    component = data['component']
-    if room in ROOMS:
-        router = ROUTERS[room]
-        router.update_component(component)
-        room_data = router.get_state()
-
-        emit('update_slides_result', {
-            'new_state': room_data}, room=room)
-
-    else:
-        emit('error', {'error': 'Unable to update widget states'})
-
-
->>>>>>> 870763192c2c05cf031ae8cd2a2651f2a75db3ab
 @socketio.on('update_component_id')
 def on_update_component_id(data):
     uid = data['uid']
@@ -259,7 +238,6 @@ def on_new_connection(data):
     else:
         emit('error', {'error': 'Unable to create new widget'})
 
-<<<<<<< HEAD
 @socketio.on('upload_json')
 def on_upload_json(data):
     uid = data['uid']
@@ -282,8 +260,6 @@ def on_upload_json(data):
              
     else:
         emit('error', {'error': 'Unable to upload json file'})
-=======
->>>>>>> 870763192c2c05cf031ae8cd2a2651f2a75db3ab
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))

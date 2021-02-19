@@ -149,6 +149,3 @@ all-*.*
 
 # e2e tests
 tests/e2e/videos
-
-# amplify
-frontend/amplify

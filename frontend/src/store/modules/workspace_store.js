@@ -82,9 +82,7 @@ export default ({
       }
     },
     WS_update_slides_result (context, message) {
-      console.log("here1")
       if (JSON.stringify(context.getters.slides) !== JSON.stringify(message.new_state)) {
-        console.log("here2")
         context.commit('set_slides', message.new_state)
       }
     }
