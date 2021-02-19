@@ -205,6 +205,23 @@ def on_update_component_id(data):
     else:
         emit('error', {'error': 'Unable to update widget states'})
 
+@socketio.on('update_component_id_batch')
+def on_update_component_id_batch(data):
+    uid = data['uid']
+    room = data['room']
+    s_id = data['s_id']
+    if room in ROOMS:
+        router = ROUTERS[room]
+        changes = data['changes']
+        for key in changes:
+            router.update_component_id(s_id, key, changes[key])
+        room_data = router.get_state()
+        
+        emit('update_slides_result', {
+            'new_state': room_data}, room=room)
+
+    else:
+        emit('error', {'error': 'Unable to update widget states'})
 
 @socketio.on('new_component')
 def on_new_component(data):

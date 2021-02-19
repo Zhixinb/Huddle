@@ -1,7 +1,7 @@
 <template>
 <div class="absolute" :style="{'top': y + 'px', 'left': x + 'px'}">
-    <svg width="100" height="100">
-        <circle cx="50" cy="50" :r="r" fill="blue" />
+    <svg :width="radius*2" :height="radius*2">
+        <circle :cx="radius" :cy="radius" :r="radius" fill="blue" />
     </svg>
 </div>
 </template>
@@ -22,7 +22,7 @@ export default {
         y: {
             type: Number
         },
-        r: {
+        radius: {
             type: Number
         },
         type_name: {

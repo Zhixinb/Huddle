@@ -1,7 +1,7 @@
 <template>
 <div class="absolute" :style="{'top': y + 'px', 'left': x + 'px'}">
-    <svg width="100" height="100">
-        <rect :width="w" :height="l" fill="blue" />
+    <svg :width="width" :height="length">
+        <rect :width="width" :height="length" fill="blue" />
     </svg>
 </div>
 </template>
@@ -22,10 +22,10 @@ export default {
         y: {
             type: Number
         },
-        w: {
+        width: {
             type: Number,
         },
-        l: {
+        length: {
             type: Number
         },
         type_name: {
