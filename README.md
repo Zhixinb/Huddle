@@ -22,28 +22,6 @@
 
 > python app.py
 
-### Docker Prerequesites
-
-* [Docker](https://www.docker.com/get-started)
-* [Docker Compose](https://docs.docker.com/compose/install/)
-
-### Run in Development
-
-```bash
-./run.sh development
-# or run the docker-compose command manually
-docker-compose -f docker-compose.yml -f docker-compose.development.yml up --build
-# navigate to localhost:8080 in browser
-```
-
-## Production
-
-```bash
-./run.sh production
-```
-
-
-
 ### AWS Amplify (for Auth, etc.)
 
 -   First get your aws_access_key_id and aws_secret_access_key via AWS Educate. Log into AWS Educate (seas email), go to AWS Account on the top right, get a starter account, click on the "Account Details" button, click show to show the keys, copy and set aside.
