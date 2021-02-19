@@ -8,7 +8,7 @@
     "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
     "start": "npm run dev",
     "serve": "npm run dev",
-    "build": "npm run dev",
+    "build": "vue-cli-service build",
     "test": "vue-cli-service e2e --record",
     "e2e": "vue-cli-service e2e ",
     "lint": "vue-cli-service lint",
