@@ -6,7 +6,8 @@ export default ({
     can_share: false,
     permission_map: {},
     slides: {},
-    role: ''
+    role: '',
+    keymap: {}
   },
   getters: {
     whitelist (state) {
@@ -23,6 +24,9 @@ export default ({
     },
     slides (state) {
       return state.slides
+    },
+    keymap (state) {
+      return state.keymap
     }
   },
   mutations: {
@@ -43,7 +47,10 @@ export default ({
     },
     set_slides (state, payload) {
       state.slides = payload
-    }
+    }, 
+    set_keymap (state, payload) {
+      state.keymap = keymap
+    }, 
   },
   actions: {
     WS_share_state_result (context, message) {

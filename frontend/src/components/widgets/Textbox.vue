@@ -10,10 +10,19 @@
 export default {
     name: 'TextWidget',
     props: {
-        x: Number,
-        y: Number,
-        text: String,
-        type_name: {
+        c_id: {
+            type: String
+        },
+        s_id: {
+            type: String
+        },
+        x: {
+            type: Number
+        },
+        y: {
+            type: Number
+        },
+        text: {
             type: String
         }
     }

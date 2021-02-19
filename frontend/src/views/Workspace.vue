@@ -13,35 +13,18 @@
 
     <v-navigation-drawer app clipped right v-if="can_share">
         <v-list>
-            <v-list-item v-for="(c_id, index) in this.selected_widgets" :key="c_id" link>
+            <v-list-item v-for="(element, index) in this.selected_widgets" :key="element[0]" link>
                 <v-list-item-content>
-                    <div v-if="slides[curr_slide_id]['components'][c_id].type_name === 'Textbox'">
-                        <Property :index="index" :c_id="c_id" :s_id="curr_slide_id" :type="'Textbox'"
-                            :t="slides[curr_slide_id]['components'][c_id].text" 
+                    <Property :index="index" :c_id="element[0]" :s_id="curr_slide_id" :type="slides[curr_slide_id]['components'][element[0]].type_name"
+                            :t="slides[curr_slide_id]['components'][element[0]].text" 
                             @text_changed="text_changed"
                             @slot_changed="slot_changed"
                             @signal_changed="signal_changed" />
-                    </div>
-                    <div v-if="slides[curr_slide_id]['components'][c_id].type_name === 'Circle'">
-                        <Property :index="index" :c_id="c_id" :s_id="curr_slide_id" :type="'Circle'"
-                            @slot_changed="slot_changed"
-                            @signal_changed="signal_changed" />
-                    </div>
-                    <div v-if="slides[curr_slide_id]['components'][c_id].type_name === 'Rectangle'">
-                        <Property :index="index" :c_id="c_id" :s_id="curr_slide_id" :type="'Rectangle'"
-                            @slot_changed="slot_changed"
-                            @signal_changed="signal_changed" />
-                    </div>
-                    <div v-if="slides[curr_slide_id]['components'][c_id].type_name === 'Slider'">
-                        <Property :index="index" :c_id="c_id" :s_id="curr_slide_id" :type="'Slider'"
-                            @slot_changed="slot_changed"
-                            @signal_changed="signal_changed" />
-                    </div>
                 </v-list-item-content>
             </v-list-item>
         </v-list>
         <v-btn
-            v-if="validSlotsSignals()"
+            v-if="connect"
             color="primary"
             @click="addConnection()"
             >
@@ -102,6 +85,14 @@
         </v-tooltip>
         <permission-modal/>
         <user-dropdown></user-dropdown>
+        <hotkey-menu/>
+        <v-btn
+           class="ma-2"
+           @click=download_json()>
+           Download
+        </v-btn>
+        <upload-menu>
+        </upload-menu>
     </v-app-bar>
    
     <div class="pa-5">
@@ -151,6 +142,8 @@
 import AppNav from '@/components/app/Nav'
 import Slide from '@/components/app/Slide';
 import PermissionModal from '@/components/app/PermissionModal';
+import HotkeyMenu from '@/components/app/HotkeyMenu';
+import UploadMenu from '@/components/app/UploadMenu';
 import {mapState, mapMutations} from 'vuex';
 import fullscreen from 'vue-fullscreen';
 import Vue from 'vue';
@@ -159,6 +152,7 @@ import Textbox from '../components/widgets/Textbox.vue';
 import Circle from '../components/widgets/Circle.vue';
 import Rect from '../components/widgets/Rect.vue';
 import Slider from '../components/widgets/Slider.vue'
+//import FileSaver from '../plugins/FileSaver.js'
 import {Widget, Circle as CircleWidget, Rectangle as RectWidget, 
         Textbox as TextWidget, Slider as SliderWidget} from '../models/widget.js';
 import UserDropdown from '../components/app/UserDropdown.vue';
@@ -169,15 +163,14 @@ export default {
     name: 'Workspace',    
     data: () => ({
         curr_room_id: '',
-        curr_slide_id: 0,
+        curr_slide_id: '0',
         fullscreen: false,
         scale: 1,
         fields: [],
         count: 0,
 
-        selected_widgets: [],
-        selected_slot: {},
-        selected_signal: {},
+        selected_widgets: [],  
+        connect: false,
 
         // Dragging elements state
         preview: null,
@@ -214,8 +207,6 @@ export default {
         update_slide(id) {
             this.curr_slide_id = id;
             this.selected_widgets = [];
-            this.selected_slot = {};
-            this.selected_signal = {};
         },
         append_slide() {
             const params = {
@@ -223,6 +214,15 @@ export default {
                 room: this.$store.getters.room,
             }
             this.$socket.emit('new_slide', params)
+        },
+        download_json() {
+            var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.slides));
+            var downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href",     dataStr);
+            downloadAnchorNode.setAttribute("download", "slides_data.json");
+            document.body.appendChild(downloadAnchorNode); // required for firefox
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
         },
         // Signals
         value_changed: function (value) {
@@ -239,27 +239,27 @@ export default {
                 changes: {"value": v}
             }
             this.$socket.emit('update_component_id', params)
-            const connections = this.slides[s_id]["connections"]
-            const components = this.slides[s_id]["components"]
-            if (c_id0 in connections && signal in connections[c_id0])
-            {
-                const slots = connections[c_id0][signal];
-                for (var i = 0; i < slots.length; i++) {
-                    const [c_id1, slot] = slots[i];
+            // const connections = this.slides[s_id]["connections"]
+            // const components = this.slides[s_id]["components"]
+            // if (c_id0 in connections && signal in connections[c_id0])
+            // {
+            //     const slots = connections[c_id0][signal];
+            //     for (var i = 0; i < slots.length; i++) {
+            //         const [c_id1, slot] = slots[i];
 
-                    if (c_id1 in components) {
-                        const widget = components[c_id1].type_name;
-                        const params1 = {
-                            uid: this.$store.getters.uid,
-                            room: this.$store.getters.room,
-                            s_id: s_id,
-                            c_id: c_id1,
-                            changes: Widget.mapSlot(widget, slot, [v])
-                        }
-                        this.$socket.emit('update_component_id', params1)
-                    }
-                }
-            }
+            //         if (c_id1 in components) {
+            //             const widget = components[c_id1].type_name;
+            //             const params1 = {
+            //                 uid: this.$store.getters.uid,
+            //                 room: this.$store.getters.room,
+            //                 s_id: s_id,
+            //                 c_id: c_id1,
+            //                 changes: Widget.mapSlot(widget, slot, [v])
+            //             }
+            //             this.$socket.emit('update_component_id', params1)
+            //         }
+            //     }
+            // }
         },
         text_changed: function (value) {
             const params = {
@@ -272,12 +272,12 @@ export default {
             this.$socket.emit('update_component_id', params)
         },
         signal_changed: function(value) {
-            this.selected_signal = value;
-            console.log(this.selected_signal);
+            this.selected_widgets[0][1] = value;
+            this.connect = this.valid();
         },
         slot_changed: function(value) {
-            this.selected_slot = value;
-            console.log(this.selected_slot);
+            this.selected_widgets[1][1] = value;
+            this.connect = this.valid();
         },
         toggle() {
             this.$refs['fullscreen'].toggle()
@@ -352,12 +352,12 @@ export default {
         },
         widgetClicked:function(event, s_id, c_id) {
             if (s_id === this.curr_slide_id) {
-                var selected = this.selected_widgets.find(element => element === c_id);
+                var selected = this.selected_widgets.find(element => element[0] === c_id);
                 if (selected === undefined) {
                     if (this.selected_widgets.length > 1) {
                         this.selected_widgets.shift();
                     }
-                    this.selected_widgets.push(c_id);
+                    this.selected_widgets.push([c_id, ""]);
                 }
             }
         },
@@ -366,17 +366,15 @@ export default {
                 uid: this.$store.getters.uid,
                 room: this.$store.getters.room,
                 s_id: this.curr_slide_id,
-                c_id0: this.selected_signal.c_id,
-                c_id1: this.selected_slot.c_id,
-                signal: this.selected_signal.signal,
-                slot: this.selected_slot.slot
+                c_id0: this.selected_widgets[0][0],
+                c_id1: this.selected_widgets[1][0],
+                signal: this.selected_widgets[0][1],
+                slot: this.selected_widgets[1][1]
             }
             this.$socket.emit('new_connection', params)
         },
-        validSlotsSignals() {
-            var valid_signal = Object.keys(this.selected_signal).length != 0;
-            var valid_slot = Object.keys(this.selected_slot).length != 0;
-            return this.selected_widgets.length == 2 && valid_signal && valid_slot;
+        valid() {
+            return this.selected_widgets.length == 2 && this.selected_widgets[0][1] !== "" && this.selected_widgets[1][1] !== "";
         },
         async redirectToLogin() {
             this.$router.push({ name: 'Login'})
@@ -391,7 +389,9 @@ export default {
         PermissionModal,
         Property,
         AppNav,
-        UserDropdown
+        UserDropdown,
+        HotkeyMenu,
+        UploadMenu
     },
     computed: {
         ...mapState(['workspace']),
@@ -405,10 +405,10 @@ export default {
     },
     watch: {
         role (newState) {
-        if (newState === 'PERM_DENIED') {
-            console.log("User doesn't have permission, redirected to home")
-            this.$router.push({ name: 'Home'})
-        }
+            if (newState === 'PERM_DENIED') {
+                console.log("User doesn't have permission, redirected to home")
+                this.$router.push({ name: 'Home'})
+            }
         }
     }
 }
