@@ -2,6 +2,7 @@ from flask import Flask, render_template, jsonify
 from flask_socketio import SocketIO, join_room, leave_room, emit, send
 from huddle.router import Router
 from huddle.workspace import Workspace, Permission
+import os
 import sys
 import json
 import ast
@@ -10,8 +11,9 @@ import ast
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app, cors_allowed_origins="*")
-ROOMS = {} # dict to track active workspaces
-ROUTERS = {} #dict to track routers
+ROOMS = {}  # dict to track active workspaces
+ROUTERS = {}  # dict to track routers
+
 
 @socketio.on('create')
 def on_create(data):
@@ -67,6 +69,7 @@ def on_leave(data):
         ws.users.remove(uid)
         send(ws.to_json(), room=room)
 
+
 @socketio.on('change')
 def on_change(data):
     """Change a workspace"""
@@ -78,8 +81,9 @@ def on_change(data):
         ws = ROOMS[room]
         router = ROUTERS[room]
 
-    ##BASIC FLOW:
+    # BASIC FLOW:
     #
+
 
 @socketio.on('get_share_state')
 def on_get_share_state(data):
@@ -89,7 +93,7 @@ def on_get_share_state(data):
     if room in ROOMS:
         ws = ROOMS[room]
 
-        if uid in ROOMS[room].user_perms:            
+        if uid in ROOMS[room].user_perms:
             emit('share_state_result', {'whitelist': ws.get_user_perms(),
                                         'global_share_state': ws.global_share_state,
                                         'can_share': ws.get_can_share(uid),
@@ -127,6 +131,8 @@ def on_set_global_share_state(data):
 
 # TODO: server-side permission checks for add/remove, modify whitelist
 # TODO: broadcast to changed listing user if they are in the room about their role
+
+
 @socketio.on('update_whitelist')
 def on_update_whitelist(data):
     uid = data['uid']
@@ -142,14 +148,15 @@ def on_update_whitelist(data):
         elif action == 'remove':
             del ws.user_perms[str(listing['uid'])]
         emit('update_whitelist_result', {'whitelist': ws.get_user_perms(),
-                                    'global_share_state': ws.global_share_state,
-                                    'can_share': ws.get_can_share(uid),
-                                    'permission_map': Workspace.getPermissionDict(),
-                                    'target_uid': role_uid,
-                                    'new_role': ws.get_role(role_uid),
-                                    'new_can_share': ws.get_can_share(role_uid)}, room=room)        
+                                         'global_share_state': ws.global_share_state,
+                                         'can_share': ws.get_can_share(uid),
+                                         'permission_map': Workspace.getPermissionDict(),
+                                         'target_uid': role_uid,
+                                         'new_role': ws.get_role(role_uid),
+                                         'new_can_share': ws.get_can_share(role_uid)}, room=room)
     else:
         emit('error', {'error': 'Unable to update whitelist'})
+
 
 @socketio.on('new_slide')
 def on_new_slide(data):
@@ -165,6 +172,7 @@ def on_new_slide(data):
     else:
         emit('error', {'error': 'Unable to update slides states'})
 
+
 @socketio.on('update_slides')
 def on_update_slides(data):
     uid = data['uid']
@@ -173,12 +181,33 @@ def on_update_slides(data):
     if room in ROOMS:
         router = ROUTERS[room]
         router.update_state(state)
-        
+
         emit('update_slides_result', {
              'new_state': state}, room=room)
     else:
         emit('error', {'error': 'Unable to update slides states'})
 
+<<<<<<< HEAD
+=======
+
+@socketio.on('update_component')
+def on_update_component(data):
+    uid = data['uid']
+    room = data['room']
+    component = data['component']
+    if room in ROOMS:
+        router = ROUTERS[room]
+        router.update_component(component)
+        room_data = router.get_state()
+
+        emit('update_slides_result', {
+            'new_state': room_data}, room=room)
+
+    else:
+        emit('error', {'error': 'Unable to update widget states'})
+
+
+>>>>>>> 870763192c2c05cf031ae8cd2a2651f2a75db3ab
 @socketio.on('update_component_id')
 def on_update_component_id(data):
     uid = data['uid']
@@ -193,9 +222,10 @@ def on_update_component_id(data):
         
         emit('update_slides_result', {
             'new_state': room_data}, room=room)
-             
+
     else:
         emit('error', {'error': 'Unable to update widget states'})
+
 
 @socketio.on('new_component')
 def on_new_component(data):
@@ -208,10 +238,11 @@ def on_new_component(data):
         room_data = router.get_state()
 
         emit('update_slides_result', {
-                'new_state': room_data}, room=room)
-             
+            'new_state': room_data}, room=room)
+
     else:
         emit('error', {'error': 'Unable to create new widget'})
+
 
 @socketio.on('new_connection')
 def on_new_connection(data):
@@ -219,14 +250,16 @@ def on_new_connection(data):
     room = data['room']
     if room in ROOMS:
         router = ROUTERS[room]
-        router.add_new_connection(data['s_id'], data['c_id0'], data['c_id1'], data['signal'], data['slot'])
+        router.add_new_connection(
+            data['s_id'], data['c_id0'], data['c_id1'], data['signal'], data['slot'])
         room_data = router.get_state()
 
         emit('update_slides_result', {
-                'new_state': room_data}, room=room)      
+            'new_state': room_data}, room=room)
     else:
         emit('error', {'error': 'Unable to create new widget'})
 
+<<<<<<< HEAD
 @socketio.on('upload_json')
 def on_upload_json(data):
     uid = data['uid']
@@ -249,6 +282,9 @@ def on_upload_json(data):
              
     else:
         emit('error', {'error': 'Unable to upload json file'})
+=======
+>>>>>>> 870763192c2c05cf031ae8cd2a2651f2a75db3ab
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    socketio.run(app, host='0.0.0.0', port=port, debug=True)

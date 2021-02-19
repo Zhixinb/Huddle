@@ -16,9 +16,14 @@ Amplify.configure(awsconfig);
 
 Vue.config.productionTip = false
 
+var hostname = window.location.hostname === 'localhost' ? '127.0.0.1:5000' : 'team-huddle.herokuapp.com'
+
 Vue.use(new VueSocketIO({
   debug: true,
-  connection: io('http://127.0.0.1:5000'),
+
+  // io('http://127.0.0.1:5000'), // Works for dev
+
+  connection: io(`http://${hostname}`),
   vuex: {
     store,
     actionPrefix: 'WS_',
