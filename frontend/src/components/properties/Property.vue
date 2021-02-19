@@ -8,15 +8,16 @@
     ></v-text-field>
     <v-select v-if="index === 0"
         v-model="selectedSignal"
-        :items="signals"
+        :items="items"
         label="Signals"
         @change="selected_signal($event)"
     ></v-select>
     <v-select v-else
         v-model="selectedSlot"
-        :items="slots"
+        :items="items"
         label="Slots"
         @change="selected_slot($event)"
+        
     ></v-select>
 </div>
 </template>
@@ -31,31 +32,25 @@ export default {
         type: String,
         c_id: String,
         s_id: String,
-        t: String
+        t: String,
+        items: Array
     },
     data() {
         return { 
             text: this.t,
-            slots: [],
-            signals: [],
             selectedSlot: '',
             selectedSignal: ''
         }
     },
-    mounted() {
-        this.signals = Object.keys(Widget.signals[this.type]);
-        this.slots = Object.keys(Widget.slots[this.type]);
-    },
     methods: {
         text_changed(event) {
-            console.log(this.slots);
-            console.log(this.signals);
             this.$emit('text_changed', {c_id: this.c_id, s_id: this.s_id, text: event})
         },
         selected_signal(event) {
             this.$emit('signal_changed', event)
         },
         selected_slot(event) {
+            console.log(event)
             this.$emit('slot_changed', event)
         }
     }

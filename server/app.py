@@ -221,7 +221,7 @@ def on_update_component_id_batch(data):
             'new_state': room_data}, room=room)
 
     else:
-        emit('error', {'error': 'Unable to update widget states'})
+        emit('error', {'error': 'Unable to batch update widget states'})
 
 @socketio.on('new_component')
 def on_new_component(data):
@@ -253,7 +253,22 @@ def on_new_connection(data):
         emit('update_slides_result', {
             'new_state': room_data}, room=room)
     else:
-        emit('error', {'error': 'Unable to create new widget'})
+        emit('error', {'error': 'Unable to create new connection'})
+
+@socketio.on('remove_connection')
+def on_remove_connection(data):
+    uid = data['uid']
+    room = data['room']
+    if room in ROOMS:
+        router = ROUTERS[room]
+        router.remove_connection(
+            data['s_id'], data['c_id0'], data['c_id1'], data['signal'], data['slot'])
+        room_data = router.get_state()
+
+        emit('update_slides_result', {
+            'new_state': room_data}, room=room)
+    else:
+        emit('error', {'error': 'Unable to remove connection'})
 
 @socketio.on('upload_json')
 def on_upload_json(data):

@@ -30,4 +30,7 @@ class Router(object):
 
     def add_new_connection(self, sid, cid0, cid1, signal, slot, expression):
         self.state_manager.add_new_connection(sid, cid0, cid1, signal, slot, expression)
+    
+    def remove_connection(self, sid, cid0, cid1, signal, slot):
+        self.state_manager.remove_connection(sid, cid0, cid1, signal, slot)
 

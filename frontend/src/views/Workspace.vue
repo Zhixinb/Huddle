@@ -14,12 +14,19 @@
     <v-navigation-drawer app clipped right v-if="can_share">
         <v-list>
             <v-list-item v-for="(c_id, index) in this.selected_widgets" :key="c_id" link>
-                <v-list-item-content>
+                <v-list-item-content v-if="index === 0">
                     <Property :index="index" :c_id="c_id" :s_id="curr_slide_id" :type="slides[curr_slide_id]['components'][c_id].type_name"
                             :t="slides[curr_slide_id]['components'][c_id].text" 
+                            :items="signals"
                             @text_changed="text_changed"
-                            @slot_changed="slot_changed"
                             @signal_changed="signal_changed"/>
+                </v-list-item-content>
+                <v-list-item-content v-if="index === 1">
+                    <Property :index="index" :c_id="c_id" :s_id="curr_slide_id" :type="slides[curr_slide_id]['components'][c_id].type_name"
+                            :t="slides[curr_slide_id]['components'][c_id].text" 
+                            :items="slots"
+                            @text_changed="text_changed"
+                            @slot_changed="slot_changed"/>
                 </v-list-item-content>
             </v-list-item>
             <v-list-item>
@@ -33,11 +40,25 @@
             </v-list-item>
         </v-list>
         <v-btn
-            v-if="valid() && expression_valid()"
+            v-if="valid() && !connection_exist() && expression_valid() && selection_valid()"
             color="primary"
             @click="add_connection()"
             >
             Connect
+        </v-btn>
+        <v-btn
+            v-if="valid() && connection_exist() && expression_valid() && selection_valid()"
+            color="success"
+            @click="add_connection()"
+            >
+            Update
+        </v-btn>
+        <v-btn
+            v-if="valid() && connection_exist()"
+            color="error"
+            @click="remove_connection()"
+            >
+            Remove
         </v-btn>
     </v-navigation-drawer>
     
@@ -183,6 +204,8 @@ export default {
         expression: '',
         signal: '',
         slot: '',
+        signals: [],
+        slots: [],
 
         // Dragging elements state
         preview: null,
@@ -219,6 +242,10 @@ export default {
         update_slide(id) {
             this.curr_slide_id = id;
             this.selected_widgets = [];
+            this.signal = ""
+            this.slot = ""
+            this.signals = []
+            this.slots = []
         },
         append_slide() {
             const params = {
@@ -299,6 +326,17 @@ export default {
         },
         signal_changed: function(value) {
             this.signal = value;
+            if (this.selected_widgets.length === 2) {
+                const c_id = this.selected_widgets[1];
+                const type_name = this.slides[this.curr_slide_id]["components"][c_id].type_name
+                const bc = this.slides[this.curr_slide_id]["backward_connections"][c_id]
+                if (bc === undefined) {
+                    this.slots = Object.keys(Widget.slots[type_name])
+                } else {
+                    this.slots = Object.keys(Widget.slots[type_name]).map(item => {return {text: item, 
+                        disabled: item in bc && !(bc[item][0] === this.selected_widgets[0] && bc[item][1] === this.signal)}})
+                }
+            }
         },
         slot_changed: function(value) {
             this.slot = value;
@@ -383,11 +421,18 @@ export default {
                         this.selected_widgets.shift()
                         this.signal = ""
                         this.slot = ""
+                        this.slots = []
+                        if (this.selected_widgets.length === 1) {
+                            const type_name = this.slides[s_id]["components"][this.selected_widgets[0]].type_name
+                            this.signals = Object.keys(Widget.signals[type_name])
+                        }
                     } else {
                         if (this.selected_widgets.length == 1) {
                             this.signal = ""
+                            this.signals = []
                         } else if (this.selected_widgets.length == 2) {
                             this.slot = ""
+                            this.slots = []
                         }
                         this.selected_widgets.pop()
                     }
@@ -395,6 +440,18 @@ export default {
                     if (this.selected_widgets.length >= 2) {
                         this.selected_widgets.pop();
                         this.slot = ""
+                    }
+                    const type_name = this.slides[s_id]["components"][c_id].type_name
+                    if (this.selected_widgets.length === 0) {
+                        this.signals = Object.keys(Widget.signals[type_name])
+                    } else {
+                        const bc = this.slides[s_id]["backward_connections"][c_id]
+                        if (bc === undefined) {
+                            this.slots = Object.keys(Widget.slots[type_name])
+                        } else {
+                            this.slots = Object.keys(Widget.slots[type_name]).map(item => {return {text: item, 
+                                disabled: item in bc && !(bc[item][0] === this.selected_widgets[0] && bc[item][1] === this.signal)}})
+                        }
                     }
                     this.selected_widgets.push(c_id)
                 }
@@ -414,6 +471,18 @@ export default {
             }
             this.$socket.emit('new_connection', params)
         },
+        remove_connection() {
+            const params = {
+                uid: this.$store.getters.uid,
+                room: this.$store.getters.room,
+                s_id: this.curr_slide_id,
+                c_id0: this.selected_widgets[0],
+                c_id1: this.selected_widgets[1],
+                signal: this.signal,
+                slot: this.slot
+            }
+            this.$socket.emit('remove_connection', params)
+        },
         valid() {
             return this.selected_widgets.length == 2 && this.signal !== "" && this.slot !== "";
         },
@@ -427,6 +496,18 @@ export default {
                 return false
             }
             return true;
+        },
+        selection_valid() {
+            const signal_c_id = this.selected_widgets[0]
+            const slot_c_id = this.selected_widgets[1]
+            const bc = this.slides[this.curr_slide_id]["backward_connections"][slot_c_id]
+            return bc === undefined || !(this.slot in bc) || (bc[this.slot][0] === signal_c_id && bc[this.slot][1] === this.signal)
+        },
+        connection_exist() {
+            const signal_c_id = this.selected_widgets[0]
+            const slot_c_id = this.selected_widgets[1]
+            const bc = this.slides[this.curr_slide_id]["backward_connections"][slot_c_id]
+            return bc !== undefined && this.slot in bc && (bc[this.slot][0] === signal_c_id && bc[this.slot][1] === this.signal)
         },
         async redirectToLogin() {
             this.$router.push({ name: 'Login'})
