@@ -247,7 +247,7 @@ def on_new_connection(data):
     if room in ROOMS:
         router = ROUTERS[room]
         router.add_new_connection(
-            data['s_id'], data['c_id0'], data['c_id1'], data['signal'], data['slot'])
+            data['s_id'], data['c_id0'], data['c_id1'], data['signal'], data['slot'], data['expression'])
         room_data = router.get_state()
 
         emit('update_slides_result', {

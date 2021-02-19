@@ -1,5 +1,5 @@
 <template>
-<div class="absolute" :style="{'top': y + 'px', 'left': x + 'px'}">
+<div class="absolute" :style="{'top': y + 'px', 'left': x + 'px', 'line-height': 0}">
     <svg :width="radius*2" :height="radius*2">
         <circle :cx="radius" :cy="radius" :r="radius" fill="blue" />
     </svg>

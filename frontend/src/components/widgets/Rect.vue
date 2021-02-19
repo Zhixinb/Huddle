@@ -1,5 +1,5 @@
 <template>
-<div class="absolute" :style="{'top': y + 'px', 'left': x + 'px'}">
+<div class="absolute" :style="{'top': y + 'px', 'left': x + 'px', 'line-height': 0}">
     <svg :width="width" :height="length">
         <rect :width="width" :height="length" fill="blue" />
     </svg>

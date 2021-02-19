@@ -13,20 +13,29 @@
 
     <v-navigation-drawer app clipped right v-if="can_share">
         <v-list>
-            <v-list-item v-for="(element, index) in this.selected_widgets" :key="element[0]" link>
+            <v-list-item v-for="(c_id, index) in this.selected_widgets" :key="c_id" link>
                 <v-list-item-content>
-                    <Property :index="index" :c_id="element[0]" :s_id="curr_slide_id" :type="slides[curr_slide_id]['components'][element[0]].type_name"
-                            :t="slides[curr_slide_id]['components'][element[0]].text" 
+                    <Property :index="index" :c_id="c_id" :s_id="curr_slide_id" :type="slides[curr_slide_id]['components'][c_id].type_name"
+                            :t="slides[curr_slide_id]['components'][c_id].text" 
                             @text_changed="text_changed"
                             @slot_changed="slot_changed"
-                            @signal_changed="signal_changed" />
+                            @signal_changed="signal_changed"/>
+                </v-list-item-content>
+            </v-list-item>
+            <v-list-item>
+                <v-list-item-content>
+                    <v-text-field
+                        v-if="valid()"
+                        v-model="expression"
+                        label="Expression"
+                    ></v-text-field>
                 </v-list-item-content>
             </v-list-item>
         </v-list>
         <v-btn
-            v-if="connect"
+            v-if="valid() && expression_valid()"
             color="primary"
-            @click="addConnection()"
+            @click="add_connection()"
             >
             Connect
         </v-btn>
@@ -156,6 +165,7 @@ import Slider from '../components/widgets/Slider.vue'
 import {Widget, Circle as CircleWidget, Rectangle as RectWidget, 
         Textbox as TextWidget, Slider as SliderWidget} from '../models/widget.js';
 import UserDropdown from '../components/app/UserDropdown.vue';
+import {evaluate} from 'mathjs'
 
 Vue.use(fullscreen);
 
@@ -170,7 +180,9 @@ export default {
         count: 0,
 
         selected_widgets: [],  
-        connect: false,
+        expression: '',
+        signal: '',
+        slot: '',
 
         // Dragging elements state
         preview: null,
@@ -244,9 +256,9 @@ export default {
                     const slots = connections[signal_c_id][signal];
                     for (const slot_c_id in slots) {
                         const slot_type = components[slot_c_id].type_name
-                        for (var i = 0; i < slots[slot_c_id].length; i++) {
-                            const slot = slots[slot_c_id][i]
-                            const slot_changes = Widget.map(signal_type, slot_type, signal, slot, signal_value)
+                        for (const slot in slots[slot_c_id]) {
+                            const expression = slots[slot_c_id][slot]
+                            const slot_changes = Widget.map(signal_type, slot_type, signal, slot, signal_value, expression)
                             for (const key in slot_changes) {
                                 if (!(slot_c_id in value)) {
                                     value[slot_c_id] = {}
@@ -286,12 +298,10 @@ export default {
             this.$socket.emit('update_component_id', params)
         },
         signal_changed: function(value) {
-            this.selected_widgets[0][1] = value;
-            this.connect = this.valid();
+            this.signal = value;
         },
         slot_changed: function(value) {
-            this.selected_widgets[1][1] = value;
-            this.connect = this.valid();
+            this.slot = value;
         },
         toggle() {
             this.$refs['fullscreen'].toggle()
@@ -366,29 +376,57 @@ export default {
         },
         widgetClicked:function(event, s_id, c_id) {
             if (s_id === this.curr_slide_id) {
-                var selected = this.selected_widgets.find(element => element[0] === c_id);
-                if (selected === undefined) {
-                    if (this.selected_widgets.length > 1) {
-                        this.selected_widgets.shift();
+                var index = this.selected_widgets.indexOf(c_id)
+                this.expression = ""
+                if (index > -1) {
+                    if (index == 0) {
+                        this.selected_widgets.shift()
+                        this.signal = ""
+                        this.slot = ""
+                    } else {
+                        if (this.selected_widgets.length == 1) {
+                            this.signal = ""
+                        } else if (this.selected_widgets.length == 2) {
+                            this.slot = ""
+                        }
+                        this.selected_widgets.pop()
                     }
-                    this.selected_widgets.push([c_id, ""]);
+                } else {
+                    if (this.selected_widgets.length >= 2) {
+                        this.selected_widgets.pop();
+                        this.slot = ""
+                    }
+                    this.selected_widgets.push(c_id)
                 }
+                
             }
         },
-        addConnection() {
+        add_connection() {
             const params = {
                 uid: this.$store.getters.uid,
                 room: this.$store.getters.room,
                 s_id: this.curr_slide_id,
-                c_id0: this.selected_widgets[0][0],
-                c_id1: this.selected_widgets[1][0],
-                signal: this.selected_widgets[0][1],
-                slot: this.selected_widgets[1][1]
+                c_id0: this.selected_widgets[0],
+                c_id1: this.selected_widgets[1],
+                signal: this.signal,
+                slot: this.slot,
+                expression: this.expression
             }
             this.$socket.emit('new_connection', params)
         },
         valid() {
-            return this.selected_widgets.length == 2 && this.selected_widgets[0][1] !== "" && this.selected_widgets[1][1] !== "";
+            return this.selected_widgets.length == 2 && this.signal !== "" && this.slot !== "";
+        },
+        expression_valid() {
+            try {
+                const value = evaluate(this.expression, {x: 0});
+                if (value === undefined) {
+                    return false
+                }
+            } catch (error) {
+                return false
+            }
+            return true;
         },
         async redirectToLogin() {
             this.$router.push({ name: 'Login'})

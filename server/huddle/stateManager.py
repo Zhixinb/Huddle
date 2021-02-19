@@ -54,7 +54,7 @@ class StateManager(object):
         self.storedData[str(self.next_sid)] = {"id": str(self.next_sid), "components": {}, "connections": {}, "next_c_id": 0}
         self.next_sid += 1
 
-    def add_new_connection(self, sid, cid0, cid1, signal, slot):
+    def add_new_connection(self, sid, cid0, cid1, signal, slot, expression):
         if sid in self.storedData:
             components = self.storedData[sid]["components"]
             if cid0 in components and cid1 in components:
@@ -67,9 +67,7 @@ class StateManager(object):
                     d[signal] = {}
                 d = d[signal]
                 if cid1 not in d:
-                    d[cid1] = []
-                d = d[cid1]
-                if slot not in d:
-                    d.append(slot)
+                    d[cid1] = {}
+                d[cid1][slot] = expression
                 return True
         return False

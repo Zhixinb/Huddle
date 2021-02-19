@@ -1,9 +1,4 @@
-const mapping = {
-    "Textbox": Textbox,
-    "Circle": Circle,
-    "Rectangle": Rectangle,
-    "Slider": Slider
-}
+import {evaluate} from 'mathjs'
 
 function Widget(c_id, s_id, x, y, type_name) {
     this.c_id = c_id;
@@ -17,7 +12,7 @@ function Widget(c_id, s_id, x, y, type_name) {
 Widget.signals = {
     "Circle": {
         "radius_changed": function(radius) {
-            return radius * 2;
+            return radius;
         }
     },
     "Rectangle": {
@@ -41,7 +36,7 @@ Widget.signals = {
 Widget.slots = {
     "Circle": {
         "update_radius": function(value) {
-            return {"radius": value / 2}
+            return {"radius": value}
         }
     },
     "Rectangle": {
@@ -68,7 +63,13 @@ Widget.map_slot = function(type, slot, arg) {
     return Widget.slots[type][slot](arg)
 }
 
-Widget.map = function(signal_type, slot_type, signal, slot, arg) {
+Widget.map = function(signal_type, slot_type, signal, slot, arg, expression) {
+    try {
+        const value = evaluate(expression);
+        return Widget.map_slot(slot_type, slot, value * Widget.map_signal(signal_type, signal, arg))
+    } catch (error) {
+        return Widget.map_slot(slot_type, slot, evaluate(expression, {x: Widget.map_signal(signal_type, signal, arg)}))
+    }
     return Widget.map_slot(slot_type, slot, Widget.map_signal(signal_type, signal, arg))
 }
 
