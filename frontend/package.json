@@ -5,7 +5,7 @@
   "author": "Zhixin Zhang <r914721222@gmail.com>",
   "private": true,
   "scripts": {
-    "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
+    "dev": "npm run dev",
     "start": "npm run dev",
     "serve": "npm run dev",
     "build": "npm run dev",
