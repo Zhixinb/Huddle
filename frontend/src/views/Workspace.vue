@@ -186,7 +186,8 @@ import Slider from '../components/widgets/Slider.vue'
 import {Widget, Circle as CircleWidget, Rectangle as RectWidget, 
         Textbox as TextWidget, Slider as SliderWidget} from '../models/widget.js';
 import UserDropdown from '../components/app/UserDropdown.vue';
-import {evaluate} from 'mathjs'
+var math = require('mathjs-expression-parser')
+
 
 Vue.use(fullscreen);
 
@@ -488,10 +489,11 @@ export default {
         },
         expression_valid() {
             try {
-                const value = evaluate(this.expression, {x: 0});
+                const value = math.eval(this.expression, {x: 1});
                 if (value === undefined) {
                     return false
                 }
+                console.log(value)
             } catch (error) {
                 return false
             }

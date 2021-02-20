@@ -1,4 +1,5 @@
-import {evaluate} from 'mathjs'
+var math = require('mathjs-expression-parser')
+
 
 function Widget(c_id, s_id, x, y, type_name) {
     this.c_id = c_id;
@@ -65,10 +66,10 @@ Widget.map_slot = function(type, slot, arg) {
 
 Widget.map = function(signal_type, slot_type, signal, slot, arg, expression) {
     try {
-        const value = evaluate(expression);
+        const value = math.eval(expression);
         return Widget.map_slot(slot_type, slot, value * Widget.map_signal(signal_type, signal, arg))
     } catch (error) {
-        return Widget.map_slot(slot_type, slot, evaluate(expression, {x: Widget.map_signal(signal_type, signal, arg)}))
+        return Widget.map_slot(slot_type, slot, math.eval(expression, {x: Widget.map_signal(signal_type, signal, arg)}))
     }
     return Widget.map_slot(slot_type, slot, Widget.map_signal(signal_type, signal, arg))
 }
