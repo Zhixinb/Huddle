@@ -19,6 +19,7 @@
     "test:unit": "vue-cli-service test:unit"
   },
   "dependencies": {
+    "@types/mathjs": "^6.0.11",
     "@vue/cli-service": "^4.5.11",
     "aws-amplify": "^3.0.8",
     "d3": "^6.3.1",
