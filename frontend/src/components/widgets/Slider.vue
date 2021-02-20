@@ -1,5 +1,5 @@
 <template>
-<div class="absolute slider-length" :style="{'top': y + 'px', 'left': x + 'px'}">
+<div class="absolute slider-length" :style="{'top': y + 'px', 'left': x + 'px', 'line-height': 0}">
     <v-slider dense max="100" min="0" :value="value" @input="value_changed($event)"></v-slider>
 </div>
 </template>

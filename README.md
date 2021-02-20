@@ -35,6 +35,10 @@
 
 -   When prompted what environment to use, choose N on existing env, rest all yes. Choose AWS Profile for authentication method (should be prompted to choose [default], if not then there is something wrong)
 
+> amplify add auth
+
+- Set login as email
+
 > amplify push
 
 -   Wait for this to finish

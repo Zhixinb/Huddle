@@ -13,22 +13,52 @@
 
     <v-navigation-drawer app clipped right v-if="can_share">
         <v-list>
-            <v-list-item v-for="(element, index) in this.selected_widgets" :key="element[0]" link>
-                <v-list-item-content>
-                    <Property :index="index" :c_id="element[0]" :s_id="curr_slide_id" :type="slides[curr_slide_id]['components'][element[0]].type_name"
-                            :t="slides[curr_slide_id]['components'][element[0]].text" 
+            <v-list-item v-for="(c_id, index) in this.selected_widgets" :key="c_id" link>
+                <v-list-item-content v-if="index === 0">
+                    <Property :index="index" :c_id="c_id" :s_id="curr_slide_id" :type="slides[curr_slide_id]['components'][c_id].type_name"
+                            :t="slides[curr_slide_id]['components'][c_id].text" 
+                            :items="signals"
                             @text_changed="text_changed"
-                            @slot_changed="slot_changed"
-                            @signal_changed="signal_changed" />
+                            @signal_changed="signal_changed"/>
+                </v-list-item-content>
+                <v-list-item-content v-if="index === 1">
+                    <Property :index="index" :c_id="c_id" :s_id="curr_slide_id" :type="slides[curr_slide_id]['components'][c_id].type_name"
+                            :t="slides[curr_slide_id]['components'][c_id].text" 
+                            :items="slots"
+                            @text_changed="text_changed"
+                            @slot_changed="slot_changed"/>
+                </v-list-item-content>
+            </v-list-item>
+            <v-list-item>
+                <v-list-item-content>
+                    <v-text-field
+                        v-if="valid()"
+                        v-model="expression"
+                        label="Expression"
+                    ></v-text-field>
                 </v-list-item-content>
             </v-list-item>
         </v-list>
         <v-btn
-            v-if="connect"
+            v-if="valid() && !connection_exist() && expression_valid() && selection_valid()"
             color="primary"
-            @click="addConnection()"
+            @click="add_connection()"
             >
             Connect
+        </v-btn>
+        <v-btn
+            v-if="valid() && connection_exist() && expression_valid() && selection_valid()"
+            color="success"
+            @click="add_connection()"
+            >
+            Update
+        </v-btn>
+        <v-btn
+            v-if="valid() && connection_exist()"
+            color="error"
+            @click="remove_connection()"
+            >
+            Remove
         </v-btn>
     </v-navigation-drawer>
     
@@ -102,9 +132,9 @@
                     <Textbox v-if="preview !== null && preview.constructor.name == 'Textbox'"
                         :x="w * preview.x" :y="h * preview.y" :text="preview.text" :style="style"/>
                     <MyCircle v-else-if="preview !== null && preview.constructor.name == 'Circle'" 
-                        :x="w * preview.x" :y="h * preview.y" :r="preview.r" :style="style"/>
+                        :x="w * preview.x" :y="h * preview.y" :radius="preview.radius" :style="style"/>
                     <MyRect v-else-if="preview !== null && preview.constructor.name == 'Rectangle'" 
-                        :x="w * preview.x" :y="h * preview.y" :w="preview.w" :l="preview.l" :style="style"/>
+                        :x="w * preview.x" :y="h * preview.y" :width="preview.width" :length="preview.length" :style="style"/>
                     <Slider v-else-if="preview !== null && preview.constructor.name == 'Slider'" 
                         :x="w * preview.x" :y="h * preview.y" :value="preview.value" :style="style"/>
                   <!-- TODO: fix empty list error, check slides.length before accessing component -->
@@ -116,12 +146,12 @@
                         </div>
                         <div v-else-if="c.type_name === 'Circle'" draggable v-on:click="widgetClicked($event, c.s_id, c.c_id)"
                             v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
-                            <MyCircle :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :r="c.r" 
+                            <MyCircle :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :radius="c.radius" 
                                 :style="style"/>
                         </div>
                         <div v-else-if="c.type_name == 'Rectangle'" draggable v-on:click="widgetClicked($event, c.s_id, c.c_id)"
                             v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
-                            <MyRect :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :w="c.w" :l="c.l" 
+                            <MyRect :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :width="c.width" :length="c.length" 
                                 :style="style"/>
                         </div>
                         <div v-else-if="c.type_name == 'Slider'" draggable v-on:click="widgetClicked($event, c.s_id, c.c_id)"
@@ -156,6 +186,7 @@ import Slider from '../components/widgets/Slider.vue'
 import {Widget, Circle as CircleWidget, Rectangle as RectWidget, 
         Textbox as TextWidget, Slider as SliderWidget} from '../models/widget.js';
 import UserDropdown from '../components/app/UserDropdown.vue';
+import {evaluate} from 'mathjs'
 
 Vue.use(fullscreen);
 
@@ -170,7 +201,11 @@ export default {
         count: 0,
 
         selected_widgets: [],  
-        connect: false,
+        expression: '',
+        signal: '',
+        slot: '',
+        signals: [],
+        slots: [],
 
         // Dragging elements state
         preview: null,
@@ -207,6 +242,10 @@ export default {
         update_slide(id) {
             this.curr_slide_id = id;
             this.selected_widgets = [];
+            this.signal = ""
+            this.slot = ""
+            this.signals = []
+            this.slots = []
         },
         append_slide() {
             const params = {
@@ -224,42 +263,56 @@ export default {
             downloadAnchorNode.click();
             downloadAnchorNode.remove();
         },
+        generate_slot_changes: function(s_id, c_id, changes) {
+            const connections = this.slides[s_id]["connections"]
+            const components = this.slides[s_id]["components"]
+            var value = {
+            }
+            value[c_id] = {}
+            var queue = []
+            for (const signal in changes) {
+                queue.push([c_id, signal])
+                value[c_id][signal] = changes[signal]
+            }
+            while (queue.length > 0) {
+                const [signal_c_id, signal_name] = queue.shift();
+                const signal = signal_name + "_changed"
+                const signal_value = value[signal_c_id][signal_name]
+                const signal_type = components[signal_c_id].type_name
+                if (signal in Widget.signals[signal_type] && signal_c_id in connections && signal in connections[signal_c_id]) {
+                    const slots = connections[signal_c_id][signal];
+                    for (const slot_c_id in slots) {
+                        const slot_type = components[slot_c_id].type_name
+                        for (const slot in slots[slot_c_id]) {
+                            const expression = slots[slot_c_id][slot]
+                            const slot_changes = Widget.map(signal_type, slot_type, signal, slot, signal_value, expression)
+                            for (const key in slot_changes) {
+                                if (!(slot_c_id in value)) {
+                                    value[slot_c_id] = {}
+                                }
+                                value[slot_c_id][key] = slot_changes[key]
+                                queue.push([slot_c_id, key])
+                            }
+                        }
+                    }
+                }
+            }
+            return value
+        },
         // Signals
         value_changed: function (value) {
             const s_id = value.s_id
-            const c_id0 = value.c_id
+            const c_id = value.c_id
             const v = value.value
-            const signal = value.signal
 
+            const changes = this.generate_slot_changes(s_id, c_id, {"value": v})
             const params = {
                 uid: this.$store.getters.uid,
                 room: this.$store.getters.room,
                 s_id: s_id,
-                c_id: c_id0,
-                changes: {"value": v}
+                changes: changes
             }
-            this.$socket.emit('update_component_id', params)
-            // const connections = this.slides[s_id]["connections"]
-            // const components = this.slides[s_id]["components"]
-            // if (c_id0 in connections && signal in connections[c_id0])
-            // {
-            //     const slots = connections[c_id0][signal];
-            //     for (var i = 0; i < slots.length; i++) {
-            //         const [c_id1, slot] = slots[i];
-
-            //         if (c_id1 in components) {
-            //             const widget = components[c_id1].type_name;
-            //             const params1 = {
-            //                 uid: this.$store.getters.uid,
-            //                 room: this.$store.getters.room,
-            //                 s_id: s_id,
-            //                 c_id: c_id1,
-            //                 changes: Widget.mapSlot(widget, slot, [v])
-            //             }
-            //             this.$socket.emit('update_component_id', params1)
-            //         }
-            //     }
-            // }
+            this.$socket.emit('update_component_id_batch', params)
         },
         text_changed: function (value) {
             const params = {
@@ -272,12 +325,21 @@ export default {
             this.$socket.emit('update_component_id', params)
         },
         signal_changed: function(value) {
-            this.selected_widgets[0][1] = value;
-            this.connect = this.valid();
+            this.signal = value;
+            if (this.selected_widgets.length === 2) {
+                const c_id = this.selected_widgets[1];
+                const type_name = this.slides[this.curr_slide_id]["components"][c_id].type_name
+                const bc = this.slides[this.curr_slide_id]["backward_connections"][c_id]
+                if (bc === undefined) {
+                    this.slots = Object.keys(Widget.slots[type_name])
+                } else {
+                    this.slots = Object.keys(Widget.slots[type_name]).map(item => {return {text: item, 
+                        disabled: item in bc && !(bc[item][0] === this.selected_widgets[0] && bc[item][1] === this.signal)}})
+                }
+            }
         },
         slot_changed: function(value) {
-            this.selected_widgets[1][1] = value;
-            this.connect = this.valid();
+            this.slot = value;
         },
         toggle() {
             this.$refs['fullscreen'].toggle()
@@ -352,29 +414,100 @@ export default {
         },
         widgetClicked:function(event, s_id, c_id) {
             if (s_id === this.curr_slide_id) {
-                var selected = this.selected_widgets.find(element => element[0] === c_id);
-                if (selected === undefined) {
-                    if (this.selected_widgets.length > 1) {
-                        this.selected_widgets.shift();
+                var index = this.selected_widgets.indexOf(c_id)
+                this.expression = ""
+                if (index > -1) {
+                    if (index == 0) {
+                        this.selected_widgets.shift()
+                        this.signal = ""
+                        this.slot = ""
+                        this.slots = []
+                        if (this.selected_widgets.length === 1) {
+                            const type_name = this.slides[s_id]["components"][this.selected_widgets[0]].type_name
+                            this.signals = Object.keys(Widget.signals[type_name])
+                        }
+                    } else {
+                        if (this.selected_widgets.length == 1) {
+                            this.signal = ""
+                            this.signals = []
+                        } else if (this.selected_widgets.length == 2) {
+                            this.slot = ""
+                            this.slots = []
+                        }
+                        this.selected_widgets.pop()
                     }
-                    this.selected_widgets.push([c_id, ""]);
+                } else {
+                    if (this.selected_widgets.length >= 2) {
+                        this.selected_widgets.pop();
+                        this.slot = ""
+                    }
+                    const type_name = this.slides[s_id]["components"][c_id].type_name
+                    if (this.selected_widgets.length === 0) {
+                        this.signals = Object.keys(Widget.signals[type_name])
+                    } else {
+                        const bc = this.slides[s_id]["backward_connections"][c_id]
+                        if (bc === undefined) {
+                            this.slots = Object.keys(Widget.slots[type_name])
+                        } else {
+                            this.slots = Object.keys(Widget.slots[type_name]).map(item => {return {text: item, 
+                                disabled: item in bc && !(bc[item][0] === this.selected_widgets[0] && bc[item][1] === this.signal)}})
+                        }
+                    }
+                    this.selected_widgets.push(c_id)
                 }
+                
             }
         },
-        addConnection() {
+        add_connection() {
             const params = {
                 uid: this.$store.getters.uid,
                 room: this.$store.getters.room,
                 s_id: this.curr_slide_id,
-                c_id0: this.selected_widgets[0][0],
-                c_id1: this.selected_widgets[1][0],
-                signal: this.selected_widgets[0][1],
-                slot: this.selected_widgets[1][1]
+                c_id0: this.selected_widgets[0],
+                c_id1: this.selected_widgets[1],
+                signal: this.signal,
+                slot: this.slot,
+                expression: this.expression
             }
             this.$socket.emit('new_connection', params)
         },
+        remove_connection() {
+            const params = {
+                uid: this.$store.getters.uid,
+                room: this.$store.getters.room,
+                s_id: this.curr_slide_id,
+                c_id0: this.selected_widgets[0],
+                c_id1: this.selected_widgets[1],
+                signal: this.signal,
+                slot: this.slot
+            }
+            this.$socket.emit('remove_connection', params)
+        },
         valid() {
-            return this.selected_widgets.length == 2 && this.selected_widgets[0][1] !== "" && this.selected_widgets[1][1] !== "";
+            return this.selected_widgets.length == 2 && this.signal !== "" && this.slot !== "";
+        },
+        expression_valid() {
+            try {
+                const value = evaluate(this.expression, {x: 0});
+                if (value === undefined) {
+                    return false
+                }
+            } catch (error) {
+                return false
+            }
+            return true;
+        },
+        selection_valid() {
+            const signal_c_id = this.selected_widgets[0]
+            const slot_c_id = this.selected_widgets[1]
+            const bc = this.slides[this.curr_slide_id]["backward_connections"][slot_c_id]
+            return bc === undefined || !(this.slot in bc) || (bc[this.slot][0] === signal_c_id && bc[this.slot][1] === this.signal)
+        },
+        connection_exist() {
+            const signal_c_id = this.selected_widgets[0]
+            const slot_c_id = this.selected_widgets[1]
+            const bc = this.slides[this.curr_slide_id]["backward_connections"][slot_c_id]
+            return bc !== undefined && this.slot in bc && (bc[this.slot][0] === signal_c_id && bc[this.slot][1] === this.signal)
         },
         async redirectToLogin() {
             this.$router.push({ name: 'Login'})

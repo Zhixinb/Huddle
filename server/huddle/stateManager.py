@@ -4,7 +4,7 @@ class StateManager(object):
     
     """Object for tracking stored data"""
     def __init__(self):
-        self.storedData = {"0": {"id": "0", "components": {}, "connections": {}, "next_c_id": 0}}
+        self.storedData = {"0": {"id": "0", "components": {}, "connections": {}, "backward_connections": {}, "next_c_id": 0}}
         self.next_sid = 1
 
     def update_state(self, new_state):
@@ -51,23 +51,37 @@ class StateManager(object):
         return False
 
     def add_new_slide(self):
-        self.storedData[str(self.next_sid)] = {"id": str(self.next_sid), "components": {}, "connections": {}, "next_c_id": 0}
+        self.storedData[str(self.next_sid)] = {"id": str(self.next_sid), "components": {}, "connections": {}, "backward_connections": {}, "next_c_id": 0}
         self.next_sid += 1
 
-    def add_new_connection(self, sid, cid0, cid1, signal, slot):
+    def add_new_connection(self, sid, cid0, cid1, signal, slot, expression):
         if sid in self.storedData:
             components = self.storedData[sid]["components"]
             if cid0 in components and cid1 in components:
-                connections = self.storedData[sid]["connections"]
-                d = connections
-                if (cid0 not in d):
+                d = self.storedData[sid]["connections"]
+                if cid0 not in d:
                     d[cid0] = {}
                 d = d[cid0]
-                if (signal not in d):
+                if signal not in d:
                     d[signal] = {}
                 d = d[signal]
-                if (cid1 not in d):
-                    d[cid1] = []
-                d[cid1].append(slot)
+                if cid1 not in d:
+                    d[cid1] = {}
+                d[cid1][slot] = expression
+                d = self.storedData[sid]["backward_connections"]
+                if cid1 not in d:
+                    d[cid1] = {}
+                d = d[cid1]
+                d[slot] = [cid0, signal]
+                return True
+        return False
+
+    def remove_connection(self, sid, cid0, cid1, signal, slot):
+        if sid in self.storedData:
+            connections = self.storedData[sid]["connections"]
+            backward_connections = self.storedData[sid]["backward_connections"]
+            if cid0 in connections and signal in connections[cid0] and cid1 in connections[cid0][signal] and slot in connections[cid0][signal][cid1]:
+                del connections[cid0][signal][cid1][slot]
+                del backward_connections[cid1][slot]
                 return True
         return False

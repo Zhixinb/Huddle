@@ -9,11 +9,11 @@
                                 :style="style"/>
                         </div>
                         <div v-else-if="c.type_name === 'Circle'">
-                            <MyCircle :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :r="c.r"
+                            <MyCircle :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :radius="c.radius"
                                 :style="style"/>
                         </div>
                         <div v-else-if="c.type_name == 'Rectangle'">
-                            <MyRect :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :w="c.w" :l="c.l"
+                            <MyRect :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :width="c.width" :length="c.length"
                                 :style="style"/>
                         </div>
                         <div v-else-if="c.type_name == 'Slider'">

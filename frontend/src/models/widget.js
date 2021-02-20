@@ -1,9 +1,4 @@
-const mapping = {
-    "Textbox": Textbox,
-    "Circle": Circle,
-    "Rectangle": Rectangle,
-    "Slider": Slider
-}
+import {evaluate} from 'mathjs'
 
 function Widget(c_id, s_id, x, y, type_name) {
     this.c_id = c_id;
@@ -15,74 +10,99 @@ function Widget(c_id, s_id, x, y, type_name) {
 
 
 Widget.signals = {
+    "Circle": {
+        "radius_changed": function(radius) {
+            return radius;
+        }
+    },
+    "Rectangle": {
+        "width_changed": function(width) {
+            return width;
+        },
+        "length_changed": function(length) {
+            return length;
+        }
+    },
+    "Textbox": {
+    },
+    "Slider": {
+        "value_changed": function (value) {
+            return value
+        }
+    }
+
 }
 
 Widget.slots = {
+    "Circle": {
+        "update_radius": function(value) {
+            return {"radius": value}
+        }
+    },
+    "Rectangle": {
+        "update_width":  function(value) {
+            return {"width": value}
+        },
+        "update_length": function(value) {
+            return {"length": value}
+        }
+    },
+    "Textbox": {
+    },
+    "Slider": {
+
+    }
 }
 
-Widget.mapSlot = function(widget, slot, args) {
-    if (widget === "Textbox") {
-        return Textbox.slots[slot][1](...args)
-    } else if (widget === "Circle") {
-        return Circle.slots[slot][1](...args)
-    } else if (widget === "Rectangle") {
-        return Rectangle.slots[slot][1](...args)
-    } else if (widget === "Slider") {
-        return Slider.slots[slot][1](...args)
+Widget.map_signal = function(type, signal, arg) {
+    return Widget.signals[type][signal](arg)
+}
+
+
+Widget.map_slot = function(type, slot, arg) {
+    return Widget.slots[type][slot](arg)
+}
+
+Widget.map = function(signal_type, slot_type, signal, slot, arg, expression) {
+    try {
+        const value = evaluate(expression);
+        return Widget.map_slot(slot_type, slot, value * Widget.map_signal(signal_type, signal, arg))
+    } catch (error) {
+        return Widget.map_slot(slot_type, slot, evaluate(expression, {x: Widget.map_signal(signal_type, signal, arg)}))
     }
+    return Widget.map_slot(slot_type, slot, Widget.map_signal(signal_type, signal, arg))
 }
 
 Widget.copy = function(widget) {
     if (widget.type_name === "Textbox") {
         return new Textbox(widget.c_id, widget.s_id, widget.x, widget.y, widget.text, widget.type_name)
     } else if (widget.type_name === "Circle") {
-        return new Circle(widget.c_id, widget.s_id, widget.x, widget.y, widget.r, widget.type_name)
+        return new Circle(widget.c_id, widget.s_id, widget.x, widget.y, widget.radius, widget.type_name)
     } else if (widget.type_name === "Rectangle") {
-        return new Rectangle(widget.c_id, widget.s_id, widget.x, widget.y, widget.w, widget.l, widget.type_name)
+        return new Rectangle(widget.c_id, widget.s_id, widget.x, widget.y, widget.width, widget.length, widget.type_name)
     } else if (widget.type_name === "Slider") {
         return new Slider(widget.c_id, widget.s_id, widget.x, widget.y, widget.value, widget.type_name)
     }
     return null;
 }
 
-function Circle(c_id, s_id, x, y, r) {
+function Circle(c_id, s_id, x, y, radius) {
     Widget.call(this, c_id, s_id, x, y, "Circle");
-    this.r = r;
+    this.radius = radius;
 }
 
 //TODO: make the type a default
 Circle.prototype = Object.create(Widget.prototype)
 Circle.prototype.constructor = Circle;
 
-Circle.signals = {
-}
-
-Circle.slots = {
-    "update_radius": function(value) {
-        return {"r": value / 2}
-    }
-}
-
-function Rectangle(c_id, s_id, x, y, w, l) {
+function Rectangle(c_id, s_id, x, y, width, length) {
     Widget.call(this, c_id, s_id, x, y, "Rectangle");
-    this.w = w;
-    this.l = l;
+    this.width = width;
+    this.length = length;
 }
 
 Rectangle.prototype = Object.create(Widget.prototype)
 Rectangle.prototype.constructor = Rectangle;
-
-Rectangle.signals = {
-}
-
-Rectangle.slots = {
-    "update_width":  function(value) {
-        return {"w": value / 2}
-    },
-    "update_length": function(value) {
-        return {"l": value / 2}
-    }
-}
 
 function Textbox(c_id, s_id, x, y, text) {
     Widget.call(this, c_id, s_id, x, y, "Textbox");
@@ -92,12 +112,6 @@ function Textbox(c_id, s_id, x, y, text) {
 Textbox.prototype = Object.create(Widget.prototype)
 Textbox.prototype.constructor = Textbox;
 
-Textbox.signals = {
-}
-
-Textbox.slots = {
-}
-
 function Slider(c_id, s_id, x, y, value) {
     Widget.call(this, c_id, s_id, x, y, "Slider");
     this.value = value;
@@ -105,14 +119,5 @@ function Slider(c_id, s_id, x, y, value) {
 
 Slider.prototype = Object.create(Widget.prototype)
 Slider.prototype.constructor = Slider;
-
-Slider.signals = {
-    "value_changed": function (slider) {
-        return slider.value
-    }
-}
-Slider.slots = {
-
-}
 
 export {Widget, Circle, Rectangle, Textbox, Slider};
