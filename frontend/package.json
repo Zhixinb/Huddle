@@ -8,7 +8,7 @@
     "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
     "start": "npm run dev",
     "serve": "npm run dev",
-    "build": "npm run dev",
+    "build": "node build/build.js",
     "test": "vue-cli-service e2e --record",
     "e2e": "vue-cli-service e2e ",
     "lint": "vue-cli-service lint",
@@ -34,7 +34,7 @@
     "vue-fullscreen": "^2.1.6",
     "vue-router": "^3.0.1",
     "vue-socket.io": "^3.0.10",
-    "vuetify": "^2.3.16",
+    "vuetify": "^2.4.4",
     "vuex": "^3.5.1"
   },
   "devDependencies": {
@@ -79,7 +79,7 @@
     "shelljs": "^0.7.6",
     "uglifyjs-webpack-plugin": "^1.1.1",
     "url-loader": "^0.5.8",
-    "vue-cli-plugin-vuetify": "~2.0.7",
+    "vue-cli-plugin-vuetify": "~2.0.9",
     "vue-loader": "^13.3.0",
     "vue-style-loader": "^3.0.1",
     "vue-template-compiler": "^2.5.2",

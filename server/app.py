@@ -2,6 +2,7 @@ from flask import Flask, render_template, jsonify
 from flask_socketio import SocketIO, join_room, leave_room, emit, send
 from huddle.router import Router
 from huddle.workspace import Workspace, Permission
+from flask_talisman import Talisman
 import os
 import sys
 import json
@@ -10,7 +11,18 @@ import ast
 # initialize Flask
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
-socketio = SocketIO(app, cors_allowed_origins="*")
+# use talisman for SSL if in prod
+talisman = None if os.environ.get('IS_HEROKU', False) else  Talisman(app)
+
+socketio = SocketIO(app, cors_allowed_origins=["http://localhost:8080", "https://amplifyapp.com:*", 
+                                               "https://herokuapp.com:*", "https://cors-everywhere-me.herokuapp.com:*", 
+                                               "https://robin-dev.d1jfi0qjq3gsdb.amplifyapp.com:*", "https://www.amplifyapp.com:*", 
+                                               "https://www.herokuapp.com:*", "https://www.cors-everywhere-me.herokuapp.com:*", 
+                                               "https://www.robin-dev.d1jfi0qjq3gsdb.amplifyapp.com:*", "https://amplifyapp.com", 
+                                               "https://herokuapp.com", "https://cors-everywhere-me.herokuapp.com", 
+                                               "https://robin-dev.d1jfi0qjq3gsdb.amplifyapp.com", "https://www.amplifyapp.com", 
+                                               "https://www.herokuapp.com", "https://www.cors-everywhere-me.herokuapp.com", 
+                                               "https://www.robin-dev.d1jfi0qjq3gsdb.amplifyapp.com"])
 ROOMS = {}  # dict to track active workspaces
 ROUTERS = {}  # dict to track routers
 
