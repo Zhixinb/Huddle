@@ -1,10 +1,13 @@
 {
   "auth": {
-    "huddlefrontend507b5e57": {
+    "huddlefrontendfc25c244": {
       "service": "Cognito",
       "providerPlugin": "awscloudformation",
       "dependsOn": [],
       "customAuth": false
     }
-  }
+  },
+  "storage": {},
+  "function": {},
+  "api": {}
 }

@@ -32,6 +32,7 @@
 
 <script>
 import { Auth } from 'aws-amplify';
+import dbHelper from '../../db'
 
 export default {
     name: 'SignUpForm',
@@ -58,6 +59,7 @@ export default {
                     password: this.password,
                 });
                 alert('Please check your email for a verification link.');
+                dbHelper.logMetric("SignupBtn")
             } catch (error) {
                 alert(error.message);
             }

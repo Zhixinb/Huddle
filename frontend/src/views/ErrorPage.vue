@@ -13,7 +13,8 @@
 </template>
 
 <script>
-
+import dbHelper from '../db'
+import sessionTracking from '@/mixins/sessionTracking'
 export default {
   name: 'ErrorPage',
   data: () => ({
@@ -21,6 +22,8 @@ export default {
   }),
   created () {
     this.msg = this.$route.params.msg
-  }
+    dbHelper.logMetric(this.$options.name)
+  },
+  mixins: [sessionTracking]
 }
 </script>

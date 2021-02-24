@@ -56,7 +56,7 @@ export default {
         },
         async redirectToHome() {
             await Auth.currentUserInfo().then(data => {
-                    console.log(data)
+                    // console.log(data)
                     if (data && data.attributes) {
                         this.$store.commit('set_email', data.attributes.email)
                         // TODO: currently unable to get username from email or email from username

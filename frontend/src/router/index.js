@@ -5,6 +5,7 @@ import Home from '@/views/Home'
 import Workspace from '@/views/Workspace'
 import ErrorPage from '@/views/ErrorPage'
 import Login from '@/views/Login'
+import Analytics from '@/views/Analytics'
 
 Vue.use(Router)
 
@@ -34,6 +35,11 @@ export default new Router({
       path: '/login',
       name: 'Login',
       component: Login
+    },
+    {
+      path: '/analytics',
+      name: 'Analytics',
+      component: Analytics
     }
   ]
 })

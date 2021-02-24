@@ -12,15 +12,18 @@ export default {
         async logout() {
             try {
                 await Auth.signOut();
-                // this.$store.getters.uid === null
-                // TODO: full clear store to default value instead of value by value
-                this.$store.commit('set_uid', null)
                 this.$router.push({ name: 'Login'})
+                
             } catch (error) {
                 alert(error.message);
             }
         },
     },
+    destroyed() {
+        // this.$store.getters.uid === null
+        // TODO: full clear store to default value instead of value by value
+        this.$store.commit('set_uid', null)
+    }
 }
 </script>
 

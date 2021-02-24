@@ -69,7 +69,8 @@
 
 <script>
 import logo from '../assets/logo-256x256.png'
-
+import dbHelper from '../db'
+import sessionTracking from '@/mixins/sessionTracking'
 export default {
     name: 'LandingPage',
     data() {
@@ -101,7 +102,11 @@ export default {
         getTop() {
             return this.$vuetify.application.top
         }
-    } 
+    } ,
+    created() {
+        dbHelper.logMetric(this.$options.name)
+    },
+    mixins: [sessionTracking]
 }
 </script>
 

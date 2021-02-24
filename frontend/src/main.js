@@ -12,8 +12,12 @@ import VueSocketIO from 'vue-socket.io'
 
 import Amplify from 'aws-amplify';
 import awsconfig from './aws-exports'; 
-Amplify.configure(awsconfig);
+import { firestorePlugin } from 'vuefire'
 
+Vue.use(firestorePlugin)
+
+Amplify.configure(awsconfig);
+// window.LOG_LEVEL='DEBUG';
 Vue.config.productionTip = false
 
 var hostname = window.location.hostname === 'localhost' ? 'http://127.0.0.1:5000' : 'https://team-huddle.herokuapp.com'

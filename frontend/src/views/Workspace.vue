@@ -186,6 +186,8 @@ import Slider from '../components/widgets/Slider.vue'
 import {Widget, Circle as CircleWidget, Rectangle as RectWidget, 
         Textbox as TextWidget, Slider as SliderWidget} from '../models/widget.js';
 import UserDropdown from '../components/app/UserDropdown.vue';
+import dbHelper from '../db'
+import sessionTracking from '@/mixins/sessionTracking'
 var math = require('mathjs-expression-parser')
 
 
@@ -219,6 +221,8 @@ export default {
             console.log("user not logged in")
             this.redirectToLogin();
         }
+
+        dbHelper.logMetric(this.$options.name)
     },
     beforeMount () {
         const params = {
@@ -545,6 +549,7 @@ export default {
                 this.$router.push({ name: 'Home'})
             }
         }
-    }
+    },
+    mixins: [sessionTracking]
 }
 </script>

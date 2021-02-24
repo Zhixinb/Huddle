@@ -15,13 +15,18 @@
 
 import SignUpForm from '@/components/forms/SignUpForm'
 import SignInForm from '@/components/forms/SignInForm'
-
+import dbHelper from '../db'
+import sessionTracking from '@/mixins/sessionTracking'
 export default {
   name: 'Login',
   components: {
     SignUpForm,
     SignInForm
-  }
+  },
+  created() {
+    dbHelper.logMetric(this.$options.name)
+  },
+  mixins: [sessionTracking]
 }
 </script>
 

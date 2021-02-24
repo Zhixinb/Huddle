@@ -27,12 +27,14 @@ import { mapMutations, mapState } from 'vuex'
 import AppNav from '@/components/app/Nav'
 import CreateForm from '@/components/forms/CreateForm'
 import JoinForm from '@/components/forms/JoinForm'
+import dbHelper from '../db'
+import sessionTracking from '@/mixins/sessionTracking'
 
 export default {
   name: 'Home',
   data: () => ({
     selected_id: '',
-    curr_uid: ''
+    // curr_uid: ''
   }),
   components: {
     AppNav,
@@ -57,16 +59,19 @@ export default {
     } else {
       console.log("user is logged in")
     }
+
+    dbHelper.logMetric(this.$options.name)
   },
   computed: {
     ...mapState(['uid'])
   },
-  watch: {
-    curr_uid: {
-      handler (newVal) {
-        this.$store.commit('set_uid', this.curr_uid)
-      }
-    }
-  }
+  // watch: {
+  //   curr_uid: {
+  //     handler (newVal) {
+  //       this.$store.commit('set_uid', this.curr_uid)
+  //     }
+  //   }
+  // },
+  mixins: [sessionTracking]
 }
 </script>
