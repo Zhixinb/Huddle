@@ -51,7 +51,7 @@ class StateManager(object):
         return False
 
     def add_new_slide(self):
-        self.storedData[str(self.next_sid)] = {"id": str(self.next_sid), "components": {}, "connections": {}, "backward_connections": {}, "next_c_id": 0}
+        self.storedData[str(len(self.storedData))] = {"id": str(len(self.storedData)), "components": {}, "connections": {}, "backward_connections": {}, "next_c_id": 0}
         self.next_sid += 1
 
     def add_new_connection(self, sid, cid0, cid1, signal, slot, expression):
