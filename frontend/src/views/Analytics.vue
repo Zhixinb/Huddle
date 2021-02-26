@@ -1,13 +1,14 @@
 <template>
-  <!-- <v-app>
-      analytics at its finest {{metric}}
-      analytics at its finest {{usersession}}
-  </v-app> -->
   <v-container fluid pa-0>
-      <!-- analytics at its finest {{metric}} -->
     <div class="col-md-6 offset-md-3">
         <v-card>
-            <line-chart :chart-data="pageViewMetricCollection"></line-chart>
+            <h1 class="pb-6 text-center">Metrics</h1>
+            <line-chart :chart-data="metricCollection" :styles="myStyles"></line-chart>
+        </v-card>
+        <br/>
+        <v-card>
+            <h1 class="pb-6 text-center">Average User Session (minutes) Per Page</h1>
+            <line-chart :chart-data="userSessionCollection" :styles="myStyles"></line-chart>
         </v-card>
     </div>
   </v-container>
@@ -29,7 +30,8 @@ export default {
     data:() => ({        
         metric: [],
         usersession: [],
-        pageViewMetricCollection: {}
+        metricCollection: {},
+        userSessionCollection: {}
     }),
     firestore: {
         metric: db.collection('metric'),
@@ -42,9 +44,8 @@ export default {
         metric (newMetric) {
             
             let dataSets = this.extractMetrics(newMetric)
-            console.log("langin:" + JSON.stringify(dataSets))           
-
-            this.pageViewMetricCollection = {     
+            
+            this.metricCollection = {     
                 datasets: [
                     {
                     label: "Landing Page Visits",
@@ -167,6 +168,53 @@ export default {
                     }
                 ]
             }
+        },
+        usersession (newUserSession) {
+            let dataSets = this.extractUserSession(newUserSession)
+
+            this.userSessionCollection = {     
+                datasets: [
+                    {
+                    label: "Home",
+                    fill: false,
+                    tension: 0.1,
+                    showLine: true, 
+                    data: dataSets["Home"]
+                    },
+                    {
+                    label: "LandingPage",
+                    fill: false,
+                    tension: 0.1,
+                    showLine: true,
+                    data: dataSets["LandingPage"]
+                    },
+                    {
+                    label: "Login",
+                    fill: false,
+                    tension: 0.1,
+                    showLine: true,  
+                    data: dataSets["Login"]
+                    },{
+                    label: "Workspace",
+                    fill: false,
+                    tension: 0.1,
+                    showLine: true,  
+                    data: dataSets["Workspace"]
+                    },{
+                    label: "Analytics",
+                    fill: false,
+                    tension: 0.1,
+                    showLine: true,  
+                    data: dataSets["Analytics"]
+                    },{
+                    label: "ErrorPage",
+                    fill: false,
+                    tension: 0.1,
+                    showLine: true,  
+                    data: dataSets["ErrorPage"]
+                    },
+                ]
+            }
         }
     },
     methods: {
@@ -182,13 +230,59 @@ export default {
           })
 
           return dataSets
+      },
+      extractUserSession(newUserSession) {
+            let dataSets = {}
+            newUserSession.forEach(userSessionItem => {
+                // Setup an empty array for each metric to push to
+                if (!(userSessionItem.page in dataSets)) {
+                    dataSets[userSessionItem.page] = {}
+                }
+
+                let page = dataSets[userSessionItem.page]
+                if (!page.hasOwnProperty(userSessionItem.timestamp_bin)) {
+                    page[userSessionItem.timestamp_bin] = {accumulator: 0, cnt: 0}
+                } 
+
+                page[userSessionItem.timestamp_bin] = {accumulator: page[userSessionItem.timestamp_bin].accumulator + userSessionItem.elapsed_time_total, 
+                                                       cnt: page[userSessionItem.timestamp_bin].cnt + 1}
+            })
+
+            let result = {}
+            for (var page in dataSets) {
+                if (dataSets.hasOwnProperty(page)) {
+                    // console.log(page + "->" + JSON.stringify(dataSets[page]))
+                    
+                    if (!( page in result)) {
+                        result[page] = []
+                    }
+
+                    let timeseries = dataSets[page]
+                    for (var timestamp_bin in timeseries) {
+                        if (timeseries.hasOwnProperty(timestamp_bin)) {
+                            // console.log(timestamp_bin + "->" + JSON.stringify(timeseries[timestamp_bin]))
+                            let values = timeseries[timestamp_bin]
+                            let accumulator = values.accumulator
+                            let cnt = values.cnt
+                            if (cnt != 0) {
+                                // console.log("acc:" + accumulator + ", cnt:" + cnt + ", result:" + accumulator / cnt)
+                                // Divide 60000 for conversion from millisecond to minutes (due to Date.now() for session tracking)
+                                result[page].push({x: moment(timestamp_bin), y: (accumulator / cnt) / 60000})
+                            }
+                        }
+                    }
+                }
+            }
+          return result
       }
     },
     mixins: [sessionTracking],
     computed: {
         myStyles () {
             return {
-                height: `${this.height}px`,
+                height: "80%",
+                width: "80%",
+                margin: "auto",
                 position: 'relative'
             }
         }
@@ -197,5 +291,5 @@ export default {
 </script>
 
 <style>
- 
+
 </style>

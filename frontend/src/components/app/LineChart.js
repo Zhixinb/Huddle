@@ -30,6 +30,13 @@ export default {
               colorschemes: {        
                 scheme: 'brewer.Paired12'     
               }        
+            },
+            legend: {
+              position: 'bottom',
+              labels: {
+                  boxWidth: 20,
+                  padding: 20
+              }
             }
           }
     }
