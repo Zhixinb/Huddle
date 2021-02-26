@@ -22,6 +22,9 @@
                 <v-list-item-title>User: {{email}}</v-list-item-title>
             </v-list-item>
           <logout-list-item></logout-list-item>      
+          <hotkey-menu></hotkey-menu>
+          <download-list-item> </download-list-item>
+          <upload-menu></upload-menu>
         </v-list>
       </v-menu>
   </v-container>
@@ -29,11 +32,17 @@
 
 <script>
 import LogoutListItem from './LogoutListItem.vue'
+import HotkeyMenu from './HotkeyMenu.vue'
+import UploadMenu from './UploadMenu.vue'
+import DownloadListItem from './DownloadListItem.vue'
 import { mapState } from 'vuex'
 
 export default {
     components: {
-        LogoutListItem 
+        LogoutListItem,
+        HotkeyMenu, 
+        UploadMenu, 
+        DownloadListItem
     },
     computed: {
         ...mapState(['email'])

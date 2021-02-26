@@ -5,18 +5,15 @@
       max-width="400"
     >
       <template v-slot:activator="{ on, attrs }">
-        <v-btn
-          dark
-          small
+        <v-list-item
           v-bind="attrs"
           v-on="on"
           v-on:click="onClick"
-          :disabled='!can_share'
           class='ma-1'
           max-width="70"
         >
           Hotkeys
-        </v-btn>
+        </v-list-item>
       </template>
       <v-card class='pa-4 mx-auto'>
         <v-card-title class="headline">

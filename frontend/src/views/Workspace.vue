@@ -115,14 +115,6 @@
         </v-tooltip>
         <permission-modal/>
         <user-dropdown></user-dropdown>
-        <hotkey-menu/>
-        <v-btn
-           class="ma-2"
-           @click=download_json()>
-           Download
-        </v-btn>
-        <upload-menu>
-        </upload-menu>
     </v-app-bar>
    
     <div class="pa-5">
