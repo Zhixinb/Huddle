@@ -31,6 +31,7 @@
 
 <script>
 import { Auth } from 'aws-amplify';
+import dbHelper from '../../db'
 
 export default {
     name: "SignInForm",
@@ -48,7 +49,7 @@ export default {
         async login() {
             try {
                 await Auth.signIn(this.email, this.password);
-                
+                dbHelper.logMetric("SigninBtn")
                 await this.redirectToHome();
             } catch (error) {
                 alert(error.message);

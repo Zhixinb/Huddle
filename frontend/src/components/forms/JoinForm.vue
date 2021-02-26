@@ -51,6 +51,8 @@
 
 <script>
 import {mapState, mapMutations} from 'vuex'
+import dbHelper from '../../db'
+
 export default {
   name: 'join-form',
   data() {
@@ -92,6 +94,7 @@ export default {
           room: this.room_id
         }
         this.$socket.emit('get_enter_room_perm', params)
+        dbHelper.logMetric("JoinRoomBtn")
       }
     },
     clicked(ws_id) {
@@ -103,8 +106,10 @@ export default {
       let canEnter = data.result
       if (canEnter) {
         this.set_room(this.room_id)
+        dbHelper.logMetric("JoinRoomSuccess")
         this.$router.push({ name: 'Workspace', params: { room: this.room_id } })
       } else {
+        dbHelper.logMetric("JoinRoomError")
         this.$router.push({ name: 'Error', params: { msg: 'No access to Room ' + this.room_id } })
       }
     },

@@ -399,6 +399,7 @@ export default {
                     component: this.preview
                 }
                 this.$socket.emit('new_component', params)
+                dbHelper.logMetric("ComponentCreated")
             }
             this.preview = null;
         },
@@ -475,6 +476,7 @@ export default {
                 expression: this.expression
             }
             this.$socket.emit('new_connection', params)
+            dbHelper.logMetric("ConnectionCreated")
         },
         remove_connection() {
             const params = {

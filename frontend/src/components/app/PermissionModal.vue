@@ -94,6 +94,7 @@
 import {mapState} from 'vuex'
 import Vue from 'vue'
 import VueClipboard from 'vue-clipboard2'
+import dbHelper from '../../db'
 
 VueClipboard.config.autoSetContainer = true
 Vue.use(VueClipboard)
@@ -131,7 +132,7 @@ export default {
         }
         console.log("perm to send for updating whitelist:" + JSON.stringify(params))
         this.$socket.emit('update_whitelist', params)
-
+        dbHelper.logMetric("PermissionAdded")
         this.new_uid = '' // clear input        
       }
     },
@@ -143,6 +144,7 @@ export default {
         action: 'remove'
       }
       this.$socket.emit('update_whitelist', params)
+      dbHelper.logMetric("PermissionRemoved")
     },
     can_remove (perm) {
       // Allow removal up to own permission level, excluding OWNER

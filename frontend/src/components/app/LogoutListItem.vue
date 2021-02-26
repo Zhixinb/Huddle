@@ -6,14 +6,15 @@
 
 <script>
 import { Auth } from 'aws-amplify';
+import dbHelper from '../../db'
 
 export default {
     methods: {
         async logout() {
             try {
                 await Auth.signOut();
-                this.$router.push({ name: 'Login'})
-                
+                dbHelper.logMetric("LogoutBtn")
+                this.$router.push({ name: 'Login'})                
             } catch (error) {
                 alert(error.message);
             }

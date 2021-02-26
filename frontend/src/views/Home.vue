@@ -57,7 +57,7 @@ export default {
     if (this.$store.getters.uid === null) {
         this.redirectToLogin();
     } else {
-      console.log("user is logged in")
+      // console.log("user is logged in")
     }
 
     dbHelper.logMetric(this.$options.name)

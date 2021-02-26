@@ -21,6 +21,7 @@
 </template>
 
 <script>
+import dbHelper from '../../db'
 
 export default {
   name: 'create-form',
@@ -33,6 +34,7 @@ export default {
       }
 
       this.$socket.emit('create', params)
+      dbHelper.logMetric("CreateRoomBtn")
     }
   }
 }
