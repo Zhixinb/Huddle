@@ -367,6 +367,8 @@ export default {
             } else {
                 this.preview = null;
             }
+            console.log("Drag Start")
+            console.log(this.preview)
         },
         dragOver:function(event) {
             event.preventDefault();
@@ -382,6 +384,8 @@ export default {
                     this.preview.y = (event.y - pos.y) / this.h;
                 }
             }
+            console.log("Drag Over")
+            console.log(this.preview)
         },
         dragEnd:function(event) {
             if (this.preview != null) {
@@ -398,6 +402,8 @@ export default {
         widgetDragStart:function(event, widget) {
             event.dataTransfer.setDragImage(document.createElement('div'), 0, 0);
             this.preview = Widget.copy(widget);
+            console.log("Widget Drag Start")
+            console.log(this.preview)
         },
         widgetDragEnd:function(event, widget) {
             const params = {
