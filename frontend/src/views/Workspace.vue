@@ -121,13 +121,13 @@
         <v-fade-transition appear>
             <v-card id ="graph-wrapper" :width="w" :height="h" v-on:dragover="dragOver">
                 <fullscreen ref="fullscreen" @change="fullscreenChange" background=#FFF>
-                    <Textbox v-if="preview !== null && preview.constructor.name == 'Textbox'"
+                    <Textbox v-if="preview !== null && preview.type_name == 'Textbox'"
                         :x="w * preview.x" :y="h * preview.y" :text="preview.text" :style="style"/>
-                    <MyCircle v-else-if="preview !== null && preview.constructor.name == 'Circle'" 
+                    <MyCircle v-else-if="preview !== null && preview.type_name == 'Circle'" 
                         :x="w * preview.x" :y="h * preview.y" :radius="preview.radius" :style="style"/>
-                    <MyRect v-else-if="preview !== null && preview.constructor.name == 'Rectangle'" 
+                    <MyRect v-else-if="preview !== null && preview.type_name == 'Rectangle'" 
                         :x="w * preview.x" :y="h * preview.y" :width="preview.width" :length="preview.length" :style="style"/>
-                    <Slider v-else-if="preview !== null && preview.constructor.name == 'Slider'" 
+                    <Slider v-else-if="preview !== null && preview.type_name == 'Slider'" 
                         :x="w * preview.x" :y="h * preview.y" :value="preview.value" :style="style"/>
                   <!-- TODO: fix empty list error, check slides.length before accessing component -->
                     <div v-for="c in slides[curr_slide_id].components" :key="c.c_id">
