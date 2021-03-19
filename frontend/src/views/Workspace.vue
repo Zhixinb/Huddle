@@ -17,14 +17,14 @@
                 <v-list-item-content v-if="index === 0">
                     <Property :index="index" :c_id="c_id" :s_id="curr_slide_id" :type="slides[curr_slide_id]['components'][c_id].type_name"
                             :t="slides[curr_slide_id]['components'][c_id].text" 
-                            :items="signals"
+                            :items="compute_signals()"
                             @text_changed="text_changed"
                             @signal_changed="signal_changed"/>
                 </v-list-item-content>
                 <v-list-item-content v-if="index === 1">
                     <Property :index="index" :c_id="c_id" :s_id="curr_slide_id" :type="slides[curr_slide_id]['components'][c_id].type_name"
                             :t="slides[curr_slide_id]['components'][c_id].text" 
-                            :items="slots"
+                            :items="compute_slots()"
                             @text_changed="text_changed"
                             @slot_changed="slot_changed"/>
                 </v-list-item-content>
@@ -130,6 +130,9 @@
                     <Slider v-else-if="preview !== null && preview.type_name == 'Slider'" 
                         :x="w * preview.x" :y="h * preview.y" :value="preview.value" :style="style"/>
                   <!-- TODO: fix empty list error, check slides.length before accessing component -->
+                    <div v-for="(l, index) in generate_lines(curr_slide_id, selected_widgets[0]).concat(generate_lines(curr_slide_id, selected_widgets[1]))" :key="-index-1">
+                        <MyLine :x0="w * l[0]" :y0="h * l[1]" :x1="w * l[2]" :y1="h * l[3]" :style="style"/>
+                    </div>
                     <div v-for="c in slides[curr_slide_id].components" :key="c.c_id">
                         <div v-if="c.type_name === 'Textbox'" draggable v-on:click="widgetClicked($event, c.s_id, c.c_id)"
                             v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
@@ -173,7 +176,8 @@ import Property from '../components/properties/Property.vue';
 import Textbox from '../components/widgets/Textbox.vue';
 import Circle from '../components/widgets/Circle.vue';
 import Rect from '../components/widgets/Rect.vue';
-import Slider from '../components/widgets/Slider.vue'
+import Slider from '../components/widgets/Slider.vue';
+import Line from '../components/widgets/Line.vue';
 //import FileSaver from '../plugins/FileSaver.js'
 import {Widget, Circle as CircleWidget, Rectangle as RectWidget, 
         Textbox as TextWidget, Slider as SliderWidget} from '../models/widget.js';
@@ -265,6 +269,9 @@ export default {
             const components = this.slides[s_id]["components"]
             var value = {
             }
+            if (!(c_id in components)) {
+                return value
+            }
             value[c_id] = {}
             var queue = []
             for (const signal in changes) {
@@ -296,6 +303,51 @@ export default {
             }
             return value
         },
+        generate_lines: function(s_id, c_id) {
+            const connections = this.slides[s_id]["connections"]
+            const components = this.slides[s_id]["components"]
+            var queue = []
+            if (c_id in components) {
+                queue.push(c_id)
+            }
+            var lines = []
+            while (queue.length > 0) {
+                const start_c_id = queue.shift()
+                const x0 = components[start_c_id].x
+                const y0 = components[start_c_id].y
+                if (start_c_id in connections) {
+                    for (const signal in connections[start_c_id]) {
+                        for (const end_c_id in connections[start_c_id][signal]) {
+                            if (Object.keys(connections[start_c_id][signal][end_c_id]).length > 0) {
+                                queue.push[end_c_id]
+                                const x1 = components[end_c_id].x
+                                const y1 = components[end_c_id].y
+                                lines.push([x0, y0, x1, y1])
+                            }
+                        }
+                    }
+                }
+            }
+            return lines;
+        },
+        compute_signals: function() {
+            if (this.selected_widgets.length > 0) {
+                return Object.keys(Widget.signals[this.slides[this.curr_slide_id]["components"][this.selected_widgets[0]].type_name])
+            }
+        },
+        compute_slots: function() {
+            if (this.selected_widgets.length > 1) {
+                const c_id = this.selected_widgets[1]
+                const type_name = this.slides[this.curr_slide_id]["components"][c_id].type_name
+                const bc = this.slides[this.curr_slide_id]["backward_connections"][c_id]
+                if (bc === undefined) {
+                    return Object.keys(Widget.slots[type_name])
+                } else {
+                    return Object.keys(Widget.slots[type_name]).map(item => {return {text: item, 
+                        disabled: item in bc && !(bc[item][0] === this.selected_widgets[0] && bc[item][1] === this.signal)}})
+                }
+            }
+        },
         // Signals
         value_changed: function (value) {
             const s_id = value.s_id
@@ -323,17 +375,6 @@ export default {
         },
         signal_changed: function(value) {
             this.signal = value;
-            if (this.selected_widgets.length === 2) {
-                const c_id = this.selected_widgets[1];
-                const type_name = this.slides[this.curr_slide_id]["components"][c_id].type_name
-                const bc = this.slides[this.curr_slide_id]["backward_connections"][c_id]
-                if (bc === undefined) {
-                    this.slots = Object.keys(Widget.slots[type_name])
-                } else {
-                    this.slots = Object.keys(Widget.slots[type_name]).map(item => {return {text: item, 
-                        disabled: item in bc && !(bc[item][0] === this.selected_widgets[0] && bc[item][1] === this.signal)}})
-                }
-            }
         },
         slot_changed: function(value) {
             this.slot = value;
@@ -413,47 +454,25 @@ export default {
         widgetClicked:function(event, s_id, c_id) {
             if (s_id === this.curr_slide_id) {
                 var index = this.selected_widgets.indexOf(c_id)
-                this.expression = ""
                 if (index > -1) {
                     if (index == 0) {
                         this.selected_widgets.shift()
                         this.signal = ""
                         this.slot = ""
-                        this.slots = []
-                        if (this.selected_widgets.length === 1) {
-                            const type_name = this.slides[s_id]["components"][this.selected_widgets[0]].type_name
-                            this.signals = Object.keys(Widget.signals[type_name])
-                        }
                     } else {
                         if (this.selected_widgets.length == 1) {
                             this.signal = ""
-                            this.signals = []
                         } else if (this.selected_widgets.length == 2) {
                             this.slot = ""
-                            this.slots = []
                         }
                         this.selected_widgets.pop()
                     }
                 } else {
-                    if (this.selected_widgets.length >= 2) {
+                    if (this.selected_widgets.length === 2) {
                         this.selected_widgets.pop();
-                        this.slot = ""
-                    }
-                    const type_name = this.slides[s_id]["components"][c_id].type_name
-                    if (this.selected_widgets.length === 0) {
-                        this.signals = Object.keys(Widget.signals[type_name])
-                    } else {
-                        const bc = this.slides[s_id]["backward_connections"][c_id]
-                        if (bc === undefined) {
-                            this.slots = Object.keys(Widget.slots[type_name])
-                        } else {
-                            this.slots = Object.keys(Widget.slots[type_name]).map(item => {return {text: item, 
-                                disabled: item in bc && !(bc[item][0] === this.selected_widgets[0] && bc[item][1] === this.signal)}})
-                        }
                     }
                     this.selected_widgets.push(c_id)
                 }
-                
             }
         },
         add_connection() {
@@ -518,6 +537,7 @@ export default {
         'MyCircle': Circle,
         'MyRect': Rect,
         Slider,
+        'MyLine': Line,
         PermissionModal,
         Property,
         AppNav,
