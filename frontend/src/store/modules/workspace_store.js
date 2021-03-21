@@ -103,6 +103,7 @@ export default ({
         const selected_widgets = context.getters.selected_widgets
         console.log("Update slide result")
         console.log(selected_widgets)
+        console.log(message)
         if ('s_id' in message) {
           console.log('s_id')
           var lines = []
