@@ -101,11 +101,17 @@ export default ({
         context.commit('set_slides', message.new_state)
         const slides = context.getters.slides
         const selected_widgets = context.getters.selected_widgets
+        console.log("Update slide result")
+        console.log(selected_widgets)
         if ('s_id' in message) {
+          console.log('s_id')
           var lines = []
           for (var i = 0; i < selected_widgets.length; i++) {
+            console.log(selected_widgets[i])
             lines = lines.concat(generate_lines(message['s_id'], selected_widgets[i], slides))
           }
+          console.log(context.getters.lines)
+          console.log(lines)
           context.commit('set_lines', lines)
         }
       }

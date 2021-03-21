@@ -483,6 +483,7 @@ export default {
             this.preview = null;
         },
         widgetClicked:function(event, s_id, c_id) {
+            console.log(this.lines)
             if (s_id === this.curr_slide_id && this.selected_widgets.indexOf(c_id) === -1 && 
                 this.selected_widgets.length < 2) {
                 this.set_selected_widgets(this.selected_widgets.concat([c_id]))
