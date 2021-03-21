@@ -1,5 +1,5 @@
 <template>
-    <div class="absolute" :style="{'top': y + 'px', 'left': x + 'px'}">
+    <div class="absolute" :style="style">
         {{text}}
     </div>
 </template>
@@ -24,8 +24,31 @@ export default {
         },
         text: {
             type: String
+        },
+        glow: {
+            type: Boolean
+        },
+        glow_color: {
+            type: String
+        }
+    },
+    computed: {
+        style () {
+            if (this.glow) {
+                return {
+                    top: this.y + 'px', 
+                    left: this.x + 'px',
+                    boxShadow: '0px 0px 20px 5px ' + this.glow_color
+                }
+            } else {
+                return {
+                    top: this.y + 'px', 
+                    left: this.x + 'px'
+                }
+            }
         }
     }
+    
 }
 </script>
 

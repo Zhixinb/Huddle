@@ -13,20 +13,36 @@
 
     <v-navigation-drawer app clipped right v-if="can_share">
         <v-list>
-            <v-list-item v-for="(c_id, index) in this.selected_widgets" :key="c_id" link>
-                <v-list-item-content v-if="index === 0">
-                    <Property :index="index" :c_id="c_id" :s_id="curr_slide_id" :type="slides[curr_slide_id]['components'][c_id].type_name"
-                            :t="slides[curr_slide_id]['components'][c_id].text" 
-                            :items="compute_signals()"
+            <v-list-item v-if="selected_widgets.length > 0">
+                <v-list-item-content>
+                    <Property :index="0" :c_id="selected_widgets[0]" :s_id="curr_slide_id" :type="slides[curr_slide_id]['components'][selected_widgets[0]].type_name"
+                            :t="slides[curr_slide_id]['components'][selected_widgets[0]].text" 
+                            :items="signals"
+                            :key="selected_widgets[0]"
                             @text_changed="text_changed"
-                            @signal_changed="signal_changed"/>
+                            @signal_changed="signal_changed"
+                            @deselect_clicked="deselect_clicked"/>
                 </v-list-item-content>
-                <v-list-item-content v-if="index === 1">
-                    <Property :index="index" :c_id="c_id" :s_id="curr_slide_id" :type="slides[curr_slide_id]['components'][c_id].type_name"
-                            :t="slides[curr_slide_id]['components'][c_id].text" 
-                            :items="compute_slots()"
+            </v-list-item>
+            <v-btn v-if="selected_widgets.length > 1"
+                color="success"
+                plain
+                small
+                @click="swap_clicked"
+            >
+                <v-icon dark>
+                    mdi-swap-vertical
+                </v-icon>
+            </v-btn>
+            <v-list-item v-if="selected_widgets.length > 1">
+                <v-list-item-content>
+                    <Property :index="1" :c_id="selected_widgets[1]" :s_id="curr_slide_id" :type="slides[curr_slide_id]['components'][selected_widgets[1]].type_name"
+                            :t="slides[curr_slide_id]['components'][selected_widgets[1]].text" 
+                            :items="slots"
+                            :key="selected_widgets[1]"
                             @text_changed="text_changed"
-                            @slot_changed="slot_changed"/>
+                            @slot_changed="slot_changed"
+                            @deselect_clicked="deselect_clicked"/>
                 </v-list-item-content>
             </v-list-item>
             <v-list-item>
@@ -130,29 +146,29 @@
                     <Slider v-else-if="preview !== null && preview.type_name == 'Slider'" 
                         :x="w * preview.x" :y="h * preview.y" :value="preview.value" :style="style"/>
                   <!-- TODO: fix empty list error, check slides.length before accessing component -->
-                    <div v-for="(l, index) in generate_lines(curr_slide_id, selected_widgets[0]).concat(generate_lines(curr_slide_id, selected_widgets[1]))" :key="-index-1">
+                    <div v-for="(l, index) in lines" :key="-index-1">
                         <MyLine :x0="w * l[0]" :y0="h * l[1]" :x1="w * l[2]" :y1="h * l[3]" :style="style"/>
                     </div>
                     <div v-for="c in slides[curr_slide_id].components" :key="c.c_id">
                         <div v-if="c.type_name === 'Textbox'" draggable v-on:click="widgetClicked($event, c.s_id, c.c_id)"
                             v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
                             <Textbox :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :text="c.text" 
-                                :style="style"/>
+                                :style="style" :glow="glow(c.c_id)" :glow_color="glow_color(c.c_id)"/>
                         </div>
                         <div v-else-if="c.type_name === 'Circle'" draggable v-on:click="widgetClicked($event, c.s_id, c.c_id)"
                             v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
                             <MyCircle :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :radius="c.radius" 
-                                :style="style"/>
+                                :style="style" :glow="glow(c.c_id)" :glow_color="glow_color(c.c_id)"/>
                         </div>
                         <div v-else-if="c.type_name == 'Rectangle'" draggable v-on:click="widgetClicked($event, c.s_id, c.c_id)"
                             v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
                             <MyRect :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :width="c.width" :length="c.length" 
-                                :style="style"/>
+                                :style="style" :glow="glow(c.c_id)" :glow_color="glow_color(c.c_id)"/>
                         </div>
                         <div v-else-if="c.type_name == 'Slider'" draggable v-on:click="widgetClicked($event, c.s_id, c.c_id)"
                             v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
                             <Slider :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :value="c.value" 
-                                @value_changed="value_changed" :style="style"/>
+                                @value_changed="value_changed" :style="style" :glow="glow(c.c_id)" :glow_color="glow_color(c.c_id)"/>
                         </div>
                     </div>
                 </fullscreen>
@@ -181,6 +197,7 @@ import Line from '../components/widgets/Line.vue';
 //import FileSaver from '../plugins/FileSaver.js'
 import {Widget, Circle as CircleWidget, Rectangle as RectWidget, 
         Textbox as TextWidget, Slider as SliderWidget} from '../models/widget.js';
+import { generate_lines } from '../utils/util.js'
 import UserDropdown from '../components/app/UserDropdown.vue';
 import dbHelper from '../db'
 import sessionTracking from '@/mixins/sessionTracking'
@@ -199,7 +216,6 @@ export default {
         fields: [],
         count: 0,
 
-        selected_widgets: [],  
         expression: '',
         signal: '',
         slot: '',
@@ -229,6 +245,8 @@ export default {
         
         this.$socket.emit('join', params)
         this.$socket.emit('get_share_state', params)
+        this.set_selected_widgets([])
+        this.set_lines([])
     },
     beforeDestroy () {
         const params = {
@@ -240,13 +258,14 @@ export default {
     methods:
     {
         ...mapMutations(['set_room']),
+        ...mapMutations('ws', ['set_lines', 'set_selected_widgets']),
         update_slide(id) {
             this.curr_slide_id = id;
-            this.selected_widgets = [];
             this.signal = ""
             this.slot = ""
             this.signals = []
             this.slots = []
+            this.set_selected_widgets([])
         },
         append_slide() {
             const params = {
@@ -263,6 +282,18 @@ export default {
             document.body.appendChild(downloadAnchorNode); // required for firefox
             downloadAnchorNode.click();
             downloadAnchorNode.remove();
+        },
+        glow: function(c_id) {
+            return this.selected_widgets[0] === c_id || this.selected_widgets[1] === c_id
+        },
+        glow_color: function(c_id) {
+            if (c_id === this.selected_widgets[0]) {
+                return 'steelblue'
+            } else if (c_id === this.selected_widgets[1]) {
+                return 'red'
+            } else {
+                return ''
+            }
         },
         generate_slot_changes: function(s_id, c_id, changes) {
             const connections = this.slides[s_id]["connections"]
@@ -304,35 +335,13 @@ export default {
             return value
         },
         generate_lines: function(s_id, c_id) {
-            const connections = this.slides[s_id]["connections"]
-            const components = this.slides[s_id]["components"]
-            var queue = []
-            if (c_id in components) {
-                queue.push(c_id)
-            }
-            var lines = []
-            while (queue.length > 0) {
-                const start_c_id = queue.shift()
-                const x0 = components[start_c_id].x
-                const y0 = components[start_c_id].y
-                if (start_c_id in connections) {
-                    for (const signal in connections[start_c_id]) {
-                        for (const end_c_id in connections[start_c_id][signal]) {
-                            if (Object.keys(connections[start_c_id][signal][end_c_id]).length > 0) {
-                                queue.push[end_c_id]
-                                const x1 = components[end_c_id].x
-                                const y1 = components[end_c_id].y
-                                lines.push([x0, y0, x1, y1])
-                            }
-                        }
-                    }
-                }
-            }
-            return lines;
+            return generate_lines(s_id, c_id, this.slides)
         },
         compute_signals: function() {
             if (this.selected_widgets.length > 0) {
                 return Object.keys(Widget.signals[this.slides[this.curr_slide_id]["components"][this.selected_widgets[0]].type_name])
+            } else {
+                return []
             }
         },
         compute_slots: function() {
@@ -346,6 +355,8 @@ export default {
                     return Object.keys(Widget.slots[type_name]).map(item => {return {text: item, 
                         disabled: item in bc && !(bc[item][0] === this.selected_widgets[0] && bc[item][1] === this.signal)}})
                 }
+            } else {
+                return []
             }
         },
         // Signals
@@ -375,9 +386,29 @@ export default {
         },
         signal_changed: function(value) {
             this.signal = value;
+            this.slots = this.compute_slots()
         },
         slot_changed: function(value) {
             this.slot = value;
+        },
+        deselect_clicked: function(value) {
+            this.set_selected_widgets(this.selected_widgets.filter((_, i) => i !== value))
+            if (value === 0) {
+                this.signal = ""
+                this.signals = this.compute_signals()
+            }
+            if (this.selected_widgets.length > 0) {
+                this.set_lines(this.generate_lines(this.curr_slide_id, this.selected_widgets[0]))
+            } else {
+                this.set_lines([])
+            }
+        },
+        swap_clicked: function() {
+            this.set_selected_widgets([this.selected_widgets[1], this.selected_widgets[0]])
+            this.signal = ""
+            this.signals = this.compute_signals()
+            this.slot = ""
+            this.slots = this.compute_slots()
         },
         toggle() {
             this.$refs['fullscreen'].toggle()
@@ -452,27 +483,17 @@ export default {
             this.preview = null;
         },
         widgetClicked:function(event, s_id, c_id) {
-            if (s_id === this.curr_slide_id) {
-                var index = this.selected_widgets.indexOf(c_id)
-                if (index > -1) {
-                    if (index == 0) {
-                        this.selected_widgets.shift()
-                        this.signal = ""
-                        this.slot = ""
-                    } else {
-                        if (this.selected_widgets.length == 1) {
-                            this.signal = ""
-                        } else if (this.selected_widgets.length == 2) {
-                            this.slot = ""
-                        }
-                        this.selected_widgets.pop()
-                    }
-                } else {
-                    if (this.selected_widgets.length === 2) {
-                        this.selected_widgets.pop();
-                    }
-                    this.selected_widgets.push(c_id)
+            if (s_id === this.curr_slide_id && this.selected_widgets.indexOf(c_id) === -1 && 
+                this.selected_widgets.length < 2) {
+                this.set_selected_widgets(this.selected_widgets.concat([c_id]))
+                if (this.selected_widgets.length === 1) {
+                    this.signal = ""
+                    this.signals = this.compute_signals()
+                } else if (this.selected_widgets.length === 2) {
+                    this.slot = ""
+                    this.slots = this.compute_slots()
                 }
+                this.set_lines(this.generate_lines(s_id, c_id).concat(this.lines))
             }
         },
         add_connection() {
@@ -547,7 +568,7 @@ export default {
     },
     computed: {
         ...mapState(['workspace']),
-        ...mapState('ws', ['role', 'slides', 'can_share']),
+        ...mapState('ws', ['role', 'slides', 'can_share', 'lines', 'selected_widgets']),
         style () {
             return {
                 transform: 'scale(' + this.scale + ')',

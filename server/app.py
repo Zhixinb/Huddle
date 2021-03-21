@@ -204,7 +204,8 @@ def on_update_component_id(data):
         room_data = router.get_state()
         
         emit('update_slides_result', {
-            'new_state': room_data}, room=room)
+            'new_state': room_data,
+            's_id': s_id}, room=room)
 
     else:
         emit('error', {'error': 'Unable to update widget states'})
@@ -222,7 +223,8 @@ def on_update_component_id_batch(data):
         room_data = router.get_state()
         
         emit('update_slides_result', {
-            'new_state': room_data}, room=room)
+            'new_state': room_data,
+            's_id': s_id}, room=room)
 
     else:
         emit('error', {'error': 'Unable to batch update widget states'})
@@ -255,7 +257,8 @@ def on_new_connection(data):
         room_data = router.get_state()
 
         emit('update_slides_result', {
-            'new_state': room_data}, room=room)
+            'new_state': room_data,
+            's_id': data['s_id']}, room=room)
     else:
         emit('error', {'error': 'Unable to create new connection'})
 
@@ -270,7 +273,8 @@ def on_remove_connection(data):
         room_data = router.get_state()
 
         emit('update_slides_result', {
-            'new_state': room_data}, room=room)
+            'new_state': room_data,
+            's_id': data['s_id']}, room=room)
     else:
         emit('error', {'error': 'Unable to remove connection'})
 

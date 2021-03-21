@@ -1,3 +1,4 @@
+import { generate_lines } from '../../utils/util.js'
 export default ({
   namespaced: true,
   state: {
@@ -7,7 +8,9 @@ export default ({
     permission_map: {},
     slides: {},
     role: '',
-    keymap: {}
+    keymap: {},
+    lines: [],
+    selected_widgets: []
   },
   getters: {
     whitelist (state) {
@@ -27,6 +30,12 @@ export default ({
     },
     keymap (state) {
       return state.keymap
+    },
+    lines (state) {
+      return state.lines
+    },
+    selected_widgets (state) {
+      return state.selected_widgets
     }
   },
   mutations: {
@@ -51,6 +60,12 @@ export default ({
     set_keymap (state, payload) {
       state.keymap = keymap
     }, 
+    set_lines (state, payload) {
+      state.lines = payload
+    },
+    set_selected_widgets(state, payload) {
+      state.selected_widgets = payload
+    }
   },
   actions: {
     WS_share_state_result (context, message) {
@@ -84,6 +99,15 @@ export default ({
     WS_update_slides_result (context, message) {
       if (JSON.stringify(context.getters.slides) !== JSON.stringify(message.new_state)) {
         context.commit('set_slides', message.new_state)
+        const slides = context.getters.slides
+        const selected_widgets = context.getters.selected_widgets
+        if ('s_id' in message) {
+          var lines = []
+          for (var i = 0; i < selected_widgets.length; i++) {
+            lines = lines.concat(generate_lines(message['s_id'], selected_widgets[i], slides))
+          }
+          context.commit('set_lines', lines)
+        }
       }
     }
   }

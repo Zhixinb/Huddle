@@ -1,5 +1,6 @@
 <template>
-<div class="absolute" :style="{'top': y + 'px', 'left': x + 'px', 'line-height': 0}">
+<div class="absolute" :width="width" :height="length" 
+    :style="style">
     <svg :width="width" :height="length">
         <rect :width="width" :height="length" fill="blue" />
     </svg>
@@ -31,6 +32,30 @@ export default {
         type_name: {
             type: String
         },
+        glow: {
+            type: Boolean
+        },
+        glow_color: {
+            type: String
+        }
+    },
+    computed: {
+        style () {
+            if (this.glow) {
+                return {
+                    top: this.y + 'px', 
+                    left: this.x + 'px', 
+                    lineHeight: 0, 
+                    boxShadow: '0px 0px 20px 5px ' + this.glow_color
+                }
+            } else {
+                return {
+                    top: this.y + 'px', 
+                    left: this.x + 'px', 
+                    lineHeight: 0, 
+                }
+            }
+        }
     }
 }
 </script>

@@ -1,6 +1,16 @@
 <template>
 <div>
-    <h3>{{type}}</h3>
+    <v-btn :style="{'position': 'absolute', 'top': 0, 'left': 0}"
+        color="error"
+        plain
+        small
+        @click="deselect()"
+    >
+        <v-icon dark>
+            mdi-close-thick
+        </v-icon>
+    </v-btn>
+    <h3 :style="{'color': index === 0 ? 'steelblue' : 'red'}">{{type}}</h3>
     <v-text-field v-if="type=='Textbox'"
         v-model="text"
         label="Text"
@@ -23,7 +33,6 @@
 </template>
 
 <script>
-import {Widget} from '../../models/widget.js';
 
 export default {
     name: 'Property',
@@ -50,8 +59,10 @@ export default {
             this.$emit('signal_changed', event)
         },
         selected_slot(event) {
-            console.log(event)
             this.$emit('slot_changed', event)
+        },
+        deselect() {
+            this.$emit('deselect_clicked', this.index)
         }
     }
 
