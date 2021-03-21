@@ -147,7 +147,7 @@
                         :x="w * preview.x" :y="h * preview.y" :value="preview.value" :style="style"/>
                   <!-- TODO: fix empty list error, check slides.length before accessing component -->
                     <div v-for="(l, index) in lines" :key="-index-1">
-                        <MyLine :x0="w * l[0]" :y0="h * l[1]" :x1="w * l[2]" :y1="h * l[3]" :style="style"/>
+                        <MyLine :x0="w * l[0]" :y0="h * l[1]" :x1="w * l[2]" :y1="h * l[3]" :style="style" :index="index"/>
                     </div>
                     <div v-for="c in slides[curr_slide_id].components" :key="c.c_id">
                         <div v-if="c.type_name === 'Textbox'" draggable v-on:click="widgetClicked($event, c.s_id, c.c_id)"
