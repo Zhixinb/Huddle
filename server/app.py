@@ -278,6 +278,23 @@ def on_remove_connection(data):
     else:
         emit('error', {'error': 'Unable to remove connection'})
 
+@socketio.on('remove_component')
+def on_remove_component(data):
+    uid = data['uid']
+    room = data['room']
+    sid = data['s_id']
+    cid = data['c_id']
+    if room in ROOMS:
+        router = ROUTERS[room]
+        router.remove_component(sid, cid)
+        room_data = router.get_state()
+
+        emit('update_slides_result', {
+            'new_state': room_data,
+            's_id': sid, 'c_id': cid}, room=room)
+    else:
+        emit('error', {'error': 'Unable to remove component'})
+
 @socketio.on('upload_json')
 def on_upload_json(data):
     uid = data['uid']

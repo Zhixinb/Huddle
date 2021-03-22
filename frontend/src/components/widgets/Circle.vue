@@ -33,25 +33,26 @@ export default {
         },
         glow_color: {
             type: String
+        },
+        focus: {
+            type: Boolean
         }
     },
     computed: {
         style () {
-            if (this.glow) {
-                return {
-                    top: this.y + 'px', 
-                    left: this.x + 'px', 
-                    lineHeight: 0, 
-                    borderRadius: '50%',
-                    boxShadow: '0px 0px 20px 5px ' + this.glow_color
-                }
-            } else {
-                return {
-                    top: this.y + 'px', 
-                    left: this.x + 'px', 
-                    lineHeight: 0, 
-                }
+            var base = {
+                top: this.y + 'px', 
+                left: this.x + 'px', 
+                lineHeight: 0,
+                borderRadius: '50%'
             }
+            if (this.glow) {
+                base.boxShadow = '0px 0px 20px 5px ' + this.glow_color
+            }
+            if (this.focus) {
+                base.border = '3px dashed green'
+            }
+            return base
         }
     }
 }

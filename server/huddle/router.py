@@ -33,4 +33,7 @@ class Router(object):
     
     def remove_connection(self, sid, cid0, cid1, signal, slot):
         self.state_manager.remove_connection(sid, cid0, cid1, signal, slot)
+    
+    def remove_component(self, sid, cid):
+        self.state_manager.remove_component(sid, cid)
 

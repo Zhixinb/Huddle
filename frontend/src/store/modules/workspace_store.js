@@ -102,6 +102,9 @@ export default ({
         const slides = context.getters.slides
         const selected_widgets = context.getters.selected_widgets
         if ('s_id' in message) {
+          if ('c_id' in message) {
+            context.commit('set_selected_widgets', selected_widgets.filter(e => e !== message['c_id']))
+          }
           var lines = []
           for (var i = 0; i < selected_widgets.length; i++) {
             lines = lines.concat(generate_lines(message['s_id'], selected_widgets[i], slides))

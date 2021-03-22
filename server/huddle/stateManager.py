@@ -85,3 +85,24 @@ class StateManager(object):
                 del backward_connections[cid1][slot]
                 return True
         return False
+    
+    def remove_component(self, sid, cid):
+        if sid in self.storedData:
+            components = self.storedData[sid]["components"]
+            connections = self.storedData[sid]["connections"]
+            backward_connections = self.storedData[sid]["backward_connections"]
+            if cid in components:
+                del components[cid]
+                if cid in connections:
+                    for signal in connections[cid]:
+                        for cid1 in connections[cid][signal]:
+                            for slot in connections[cid][signal][cid1]:
+                                del backward_connections[cid1][slot]
+                    del connections[cid]
+                if cid in backward_connections:
+                    for slot in backward_connections[cid]:
+                        cid1, signal = backward_connections[cid][slot]
+                        del connections[cid1][signal][cid][slot]
+                    del backward_connections[cid]
+                return True
+        return False

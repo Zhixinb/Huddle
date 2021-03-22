@@ -137,6 +137,7 @@
         <v-fade-transition appear>
             <v-card id ="graph-wrapper" :width="w" :height="h" v-on:dragover="dragOver">
                 <fullscreen ref="fullscreen" @change="fullscreenChange" background=#FFF>
+                    <div id="test" :style="{'width': w + 'px' , 'height': h + 'px'}" v-on:click="widgetClicked($event, -1, -1)"></div>
                     <Textbox v-if="preview !== null && preview.type_name == 'Textbox'"
                         :x="w * preview.x" :y="h * preview.y" :text="preview.text" :style="style"/>
                     <MyCircle v-else-if="preview !== null && preview.type_name == 'Circle'" 
@@ -153,22 +154,23 @@
                         <div v-if="c.type_name === 'Textbox'" draggable v-on:click="widgetClicked($event, c.s_id, c.c_id)"
                             v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
                             <Textbox :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :text="c.text" 
-                                :style="style" :glow="glow(c.c_id)" :glow_color="glow_color(c.c_id)"/>
+                                :style="style" :glow="glow(c.c_id)" :glow_color="glow_color(c.c_id)" :focus="is_focus(c.c_id)"/>
                         </div>
                         <div v-else-if="c.type_name === 'Circle'" draggable v-on:click="widgetClicked($event, c.s_id, c.c_id)"
                             v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
                             <MyCircle :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :radius="c.radius" 
-                                :style="style" :glow="glow(c.c_id)" :glow_color="glow_color(c.c_id)"/>
+                                :style="style" :glow="glow(c.c_id)" :glow_color="glow_color(c.c_id)" :focus="is_focus(c.c_id)"/>
                         </div>
                         <div v-else-if="c.type_name == 'Rectangle'" draggable v-on:click="widgetClicked($event, c.s_id, c.c_id)"
                             v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
                             <MyRect :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :width="c.width" :length="c.length" 
-                                :style="style" :glow="glow(c.c_id)" :glow_color="glow_color(c.c_id)"/>
+                                :style="style" :glow="glow(c.c_id)" :glow_color="glow_color(c.c_id)" :focus="is_focus(c.c_id)"/>
                         </div>
                         <div v-else-if="c.type_name == 'Slider'" draggable v-on:click="widgetClicked($event, c.s_id, c.c_id)"
                             v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
                             <Slider :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :value="c.value" 
-                                @value_changed="value_changed" :style="style" :glow="glow(c.c_id)" :glow_color="glow_color(c.c_id)"/>
+                                @value_changed="value_changed" :style="style" :glow="glow(c.c_id)" :glow_color="glow_color(c.c_id)"
+                                :focus="is_focus(c.c_id)"/>
                         </div>
                     </div>
                 </fullscreen>
@@ -221,6 +223,7 @@ export default {
         slot: '',
         signals: [],
         slots: [],
+        focus: '',
 
         // Dragging elements state
         preview: null,
@@ -229,6 +232,17 @@ export default {
         
     }),
     created() {
+        window.addEventListener('keydown', (e) => {
+            if (this.focus && (e.key === 'Backspace' || e.key === 'Delete')) {
+                const params = {
+                uid: this.$store.getters.uid,
+                room: this.$store.getters.room,
+                s_id: this.curr_slide_id,
+                c_id: this.focus
+            }
+            this.$socket.emit('remove_component', params)
+            }
+        });
         if (this.$store.getters.uid === null) {
             console.log("user not logged in")
             this.redirectToLogin();
@@ -295,6 +309,9 @@ export default {
                 return ''
             }
         },
+        is_focus: function(c_id) {
+            return this.focus === c_id
+        },
         generate_slot_changes: function(s_id, c_id, changes) {
             const connections = this.slides[s_id]["connections"]
             const components = this.slides[s_id]["components"]
@@ -317,8 +334,8 @@ export default {
                 if (signal in Widget.signals[signal_type] && signal_c_id in connections && signal in connections[signal_c_id]) {
                     const slots = connections[signal_c_id][signal];
                     for (const slot_c_id in slots) {
-                        const slot_type = components[slot_c_id].type_name
                         for (const slot in slots[slot_c_id]) {
+                            const slot_type = components[slot_c_id].type_name
                             const expression = slots[slot_c_id][slot]
                             const slot_changes = Widget.map(signal_type, slot_type, signal, slot, signal_value, expression)
                             for (const key in slot_changes) {
@@ -441,7 +458,7 @@ export default {
             }
         },
         dragOver:function(event) {
-            event.preventDefault();
+            event.preventDefault()
             if (this.fullscreen) {
                 if (event.x >= 0 && event.x <= this.w && event.y >= 0 && event.y <= this.h) {
                     this.preview.x = event.x / this.w;
@@ -483,17 +500,23 @@ export default {
             this.preview = null;
         },
         widgetClicked:function(event, s_id, c_id) {
-            if (s_id === this.curr_slide_id && this.selected_widgets.indexOf(c_id) === -1 && 
-                this.selected_widgets.length < 2) {
-                this.set_selected_widgets(this.selected_widgets.concat([c_id]))
-                if (this.selected_widgets.length === 1) {
-                    this.signal = ""
-                    this.signals = this.compute_signals()
-                } else if (this.selected_widgets.length === 2) {
-                    this.slot = ""
-                    this.slots = this.compute_slots()
+            if (s_id === -1 && c_id === -1) {
+                this.focus = ''
+                this.set_selected_widgets([])
+                this.set_lines([])
+            } else if (s_id === this.curr_slide_id) {
+                this.focus = c_id;
+                if (this.selected_widgets.indexOf(c_id) === -1 && this.selected_widgets.length < 2) {
+                    this.set_selected_widgets(this.selected_widgets.concat([c_id]))
+                    if (this.selected_widgets.length === 1) {
+                        this.signal = ""
+                        this.signals = this.compute_signals()
+                    } else if (this.selected_widgets.length === 2) {
+                        this.slot = ""
+                        this.slots = this.compute_slots()
+                    }
+                    this.set_lines(this.generate_lines(s_id, c_id).concat(this.lines))
                 }
-                this.set_lines(this.generate_lines(s_id, c_id).concat(this.lines))
             }
         },
         add_connection() {
