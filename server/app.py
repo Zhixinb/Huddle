@@ -14,7 +14,7 @@ app.config['SECRET_KEY'] = 'secret!'
 # use talisman for SSL if in prod
 talisman = None if os.environ.get('IS_HEROKU', False) else  Talisman(app)
 
-socketio = SocketIO(app, cors_allowed_origins=["http://localhost:8080", "https://robin-dev.d1jfi0qjq3gsdb.amplifyapp.com"])
+socketio = SocketIO(app, cors_allowed_origins=["http://localhost:8080", "https://robin-dev.d1jfi0qjq3gsdb.amplifyapp.com", "https://main.d1jfi0qjq3gsdb.amplifyapp.com"])
 ROOMS = {}  # dict to track active workspaces
 ROUTERS = {}  # dict to track routers
 
