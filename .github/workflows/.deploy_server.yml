@@ -14,6 +14,6 @@ jobs:
         with:
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
           heroku_app_name: "team-huddle" #Must be unique in Heroku
-          heroku_email: "zhixinz@seas.upenn.edu"
+          heroku_email: ${{secrets.HEROKU_API_KEY}}
         env:
           HD_APP_BASE: "server"
