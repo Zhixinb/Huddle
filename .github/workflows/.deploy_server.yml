@@ -15,6 +15,6 @@ jobs:
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
           heroku_app_name: "team-huddle" #Must be unique in Heroku
           heroku_email: ${{secrets.HEROKU_API_KEY}}
+          appdir: "server"
         env:
-          HD_APP_BASE: "server"
           HD_IS_HEROKU: True
