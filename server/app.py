@@ -355,6 +355,7 @@ def handle_exit():
 def load_from_db():
     if IS_HEROKU:
         for key in db.scan_iter():
+            key = str(key, 'utf-8', 'ignore')
             if key.startswith(ROOM_NAMESPACE):
                 room = remove_prefix(key, ROOM_NAMESPACE)
                 ROOMS[room] = pickle.loads(db.get(key))
