@@ -2,6 +2,7 @@ from flask import Flask, render_template, jsonify
 from flask_socketio import SocketIO, join_room, leave_room, emit, send
 from huddle.router import Router
 from huddle.workspace import Workspace, Permission
+from apscheduler.schedulers.background import BackgroundScheduler
 from flask_talisman import Talisman
 import os
 import sys
@@ -31,7 +32,6 @@ ROOM_NAMESPACE = "ROOM/"
 ROUTER_NAMESPACE = "ROUTER/"
 ROOMS = {}  # dict to track active workspaces
 ROUTERS = {}  # dict to track routers
-
 
 @socketio.on('create')
 def on_create(data):
@@ -366,11 +366,16 @@ def load_from_db():
 
 if __name__ == '__main__':
     if IS_HEROKU:
-        atexit.register(handle_exit)
-        signal.signal(signal.SIGTERM, handle_exit)
-        signal.signal(signal.SIGINT, handle_exit)
+        # currently no way to detect SIGNTERM or SIGKILL from Heroku when dyno restarts during redeployment
+        # atexit, signal.signal do not work with current setup
+        scheduler = BackgroundScheduler()
+        scheduler.add_job(func=handle_exit, trigger="interval", seconds=10)
+        scheduler.start()
 
-        load_from_db()
+        # Shut down the scheduler when exiting the app
+        atexit.register(lambda: scheduler.shutdown())
+
+        load_from_db()    
 
     port = int(os.environ.get("PORT", 5000))
     socketio.run(app, host='0.0.0.0', port=port, debug=True)
