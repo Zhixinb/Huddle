@@ -2,14 +2,19 @@
   <v-container fluid pa-0>
     <div class="col-md-6 offset-md-3">
         <v-card>
-            <h1 class="pb-6 text-center">Metrics</h1>
-            <line-chart :chart-data="metricCollection" :styles="myStyles"></line-chart>
+            <h1 class="pb-6 text-center">Page Visits</h1>
+            <line-chart :chart-data="pageVisitCollection" :styles="myStyles"></line-chart>
         </v-card>
         <br/>
         <v-card>
             <h1 class="pb-6 text-center">Average User Session (minutes) Per Page</h1>
             <line-chart :chart-data="userSessionCollection" :styles="myStyles"></line-chart>
         </v-card>
+        <br/>
+        <v-card>
+            <h1 class="pb-6 text-center">UI Interactions</h1>
+            <line-chart :chart-data="uiClickCollection" :styles="myStyles"></line-chart>
+        </v-card>        
     </div>
   </v-container>
 </template>
@@ -30,8 +35,9 @@ export default {
     data:() => ({        
         metric: [],
         usersession: [],
-        metricCollection: {},
-        userSessionCollection: {}
+        pageVisitCollection: {},
+        userSessionCollection: {},
+        uiClickCollection: {}
     }),
     firestore: {
         metric: db.collection('metric'),
@@ -45,7 +51,7 @@ export default {
             
             let dataSets = this.extractMetrics(newMetric)
             
-            this.metricCollection = {     
+            this.pageVisitCollection = {     
                 datasets: [
                     {
                     label: "Landing Page Visits",
@@ -88,7 +94,12 @@ export default {
                     tension: 0.1,
                     showLine: true,
                     data: dataSets["ErrorPage"]
-                    },
+                    }
+                ]
+            }
+
+            this.uiClickCollection = {     
+                datasets: [                   
                     {
                     label: "Logout Btn Clicked",
                     fill: false,
