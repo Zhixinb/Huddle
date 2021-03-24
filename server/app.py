@@ -362,7 +362,7 @@ def load_from_db():
                 room = remove_prefix(key, ROUTER_NAMESPACE)
                 ROUTERS[room] = pickle.loads(db.get(key))     
         print("loading -- ROOMS:" + str(ROOMS))
-        print("loading -- ROUTERS:" + str(ROUTERS))   
+        print("loading -- ROUTERS:" + str(ROUTERS))
 
 if __name__ == '__main__':
     if IS_HEROKU:
