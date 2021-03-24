@@ -340,6 +340,7 @@ def remove_prefix(text, prefix):
 def save_game_state(namespace, room, state):
     if IS_HEROKU:
         db.setex(namespace + room, REDIS_TTL_S, pickle.dumps(state))
+        print("saving -- key:" + namespace + room + ", value:" + pickle.dumps(state))
 
 def handle_exit():
     if IS_HEROKU:
@@ -359,7 +360,9 @@ def load_from_db():
                 ROOMS[room] = pickle.loads(db.get(key))
             elif key.startswith(ROUTER_NAMESPACE):
                 room = remove_prefix(key, ROUTER_NAMESPACE)
-                ROUTERS[room] = pickle.loads(db.get(key))        
+                ROUTERS[room] = pickle.loads(db.get(key))     
+        print("loading -- ROOMS:" + ROOMS)
+        print("loading -- ROUTERS:" + ROUTERS)   
 
 if __name__ == '__main__':
     if IS_HEROKU:
