@@ -339,18 +339,18 @@ def remove_prefix(text, prefix):
 
 def save_game_state(namespace, room, state):
     if IS_HEROKU:
-        db.setex(str(namespace, 'utf-8', 'ignore') + room, REDIS_TTL_S, pickle.dumps(state))
-        print("saving -- key:" + str(namespace, 'utf-8', 'ignore') + room + ", value:" + pickle.dumps(state))
+        db.setex(namespace + room, REDIS_TTL_S, pickle.dumps(state))
+    print("saving -- key:" + str(namespace, 'utf-8', 'ignore') + room + ", value:" + str(pickle.dumps(state)))
 
 def handle_exit():
-    if IS_HEROKU:
+    # if IS_HEROKU:
         # Clear db
         # db.flushdb()
         # save dicts
-        for room in ROOMS:
-            save_game_state(ROOM_NAMESPACE, room, ROOMS[room])
-        for room in ROUTERS:
-            save_game_state(ROUTER_NAMESPACE, room, ROUTERS[room])
+    for room in ROOMS:
+        save_game_state(ROOM_NAMESPACE, room, ROOMS[room])
+    for room in ROUTERS:
+        save_game_state(ROUTER_NAMESPACE, room, ROUTERS[room])
 
 def load_from_db():
     if IS_HEROKU:
@@ -365,16 +365,16 @@ def load_from_db():
         print("loading -- ROUTERS:" + str(ROUTERS))
 
 if __name__ == '__main__':
+    # currently no way to detect SIGNTERM or SIGKILL from Heroku when dyno restarts during redeployment
+    # atexit, signal.signal do not work with current setup
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(func=handle_exit, trigger="interval", seconds=10)
+    scheduler.start()
+
+    # Shut down the scheduler when exiting the app
+    atexit.register(lambda: scheduler.shutdown())
+
     if IS_HEROKU:
-        # currently no way to detect SIGNTERM or SIGKILL from Heroku when dyno restarts during redeployment
-        # atexit, signal.signal do not work with current setup
-        scheduler = BackgroundScheduler()
-        scheduler.add_job(func=handle_exit, trigger="interval", seconds=10)
-        scheduler.start()
-
-        # Shut down the scheduler when exiting the app
-        atexit.register(lambda: scheduler.shutdown())
-
         load_from_db()    
 
     port = int(os.environ.get("PORT", 5000))
