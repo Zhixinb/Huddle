@@ -7,12 +7,18 @@ import os
 import sys
 import json
 import ast
+import redis
+
+# TTL is 10m in dev, 12h in prod
+REDIS_TTL_S = 60*60*12 if os.environ.get('IS_HEROKU', False) else 60*10 
+redis_url = os.getenv('REDISTOGO_URL', 'redis://localhost:6379')
+db = redis.from_url(redis_url)
 
 # initialize Flask
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 # use talisman for SSL if in prod
-talisman = None if os.environ.get('IS_HEROKU', False) else  Talisman(app)
+talisman = Talisman(app) if os.environ.get('IS_HEROKU', False) else None
 
 socketio = SocketIO(app, cors_allowed_origins=["http://localhost:8080", "https://robin-dev.d1jfi0qjq3gsdb.amplifyapp.com", "https://main.d1jfi0qjq3gsdb.amplifyapp.com"])
 ROOMS = {}  # dict to track active workspaces
