@@ -339,8 +339,8 @@ def remove_prefix(text, prefix):
 
 def save_game_state(namespace, room, state):
     if IS_HEROKU:
-        db.setex(namespace.decode() + room, REDIS_TTL_S, pickle.dumps(state))
-        print("saving -- key:" + namespace.decode() + room + ", value:" + pickle.dumps(state))
+        db.setex(str(namespace, 'utf-8', 'ignore') + room, REDIS_TTL_S, pickle.dumps(state))
+        print("saving -- key:" + str(namespace, 'utf-8', 'ignore') + room + ", value:" + pickle.dumps(state))
 
 def handle_exit():
     if IS_HEROKU:
