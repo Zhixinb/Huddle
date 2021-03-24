@@ -8,19 +8,27 @@ import sys
 import json
 import ast
 import redis
+import signal
+import atexit
+import pickle
 
-# TTL is 10m in dev, 12h in prod
-REDIS_TTL_S = 60*60*12 if os.environ.get('IS_HEROKU', False) else 60*10 
-redis_url = os.getenv('REDISTOGO_URL', 'redis://localhost:6379')
-db = redis.from_url(redis_url)
+IS_HEROKU = os.environ.get('IS_HEROKU', False)
+# TTL is 12h in prod
+REDIS_TTL_S = 60*60*12 if IS_HEROKU else 0
+db = None
+if IS_HEROKU:
+    redis_url = os.getenv('REDISTOGO_URL', None)
+    db = redis.from_url(redis_url)
 
 # initialize Flask
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 # use talisman for SSL if in prod
-talisman = Talisman(app) if os.environ.get('IS_HEROKU', False) else None
+talisman = Talisman(app) if IS_HEROKU else None
 
 socketio = SocketIO(app, cors_allowed_origins=["http://localhost:8080", "https://robin-dev.d1jfi0qjq3gsdb.amplifyapp.com", "https://main.d1jfi0qjq3gsdb.amplifyapp.com"])
+ROOM_NAMESPACE = "ROOM/"
+ROUTER_NAMESPACE = "ROUTER/"
 ROOMS = {}  # dict to track active workspaces
 ROUTERS = {}  # dict to track routers
 
@@ -324,6 +332,25 @@ def on_upload_json(data):
     else:
         emit('error', {'error': 'Unable to upload json file'})
 
+def save_game_state(namespace, room, state):
+    if IS_HEROKU:
+        db.setex(namespace + room, REDIS_TTL_S, pickle.dumps(state))
+
+def handle_exit():
+    if IS_HEROKU:
+        # Clear db
+        db.flushdb()
+        # save dicts
+        for room in ROOMS:
+            save_game_state(ROOM_NAMESPACE, room, ROOMS[room])
+        for room in ROUTERS:
+            save_game_state(ROUTER_NAMESPACE, room, ROUTERS[room])        
+
 if __name__ == '__main__':
+    if IS_HEROKU:
+        atexit.register(handle_exit)
+        signal.signal(signal.SIGTERM, handle_exit)
+        signal.signal(signal.SIGINT, handle_exit)
+
     port = int(os.environ.get("PORT", 5000))
     socketio.run(app, host='0.0.0.0', port=port, debug=True)
