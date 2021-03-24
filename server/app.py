@@ -348,9 +348,9 @@ def handle_exit():
         # db.flushdb()
         # save dicts
         for room in ROOMS:
-            save_game_state(ROOM_NAMESPACE, room, ROOMS[room])
+            save_game_state(str(ROOM_NAMESPACE), room, ROOMS[room])
         for room in ROUTERS:
-            save_game_state(ROUTER_NAMESPACE, room, ROUTERS[room])
+            save_game_state(str(ROUTER_NAMESPACE), room, ROUTERS[room])
 
 def load_from_db():
     if IS_HEROKU:
