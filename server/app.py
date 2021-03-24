@@ -332,6 +332,11 @@ def on_upload_json(data):
     else:
         emit('error', {'error': 'Unable to upload json file'})
 
+def remove_prefix(text, prefix):
+    if text.startswith(prefix):
+        return text[len(prefix):]
+    return text
+
 def save_game_state(namespace, room, state):
     if IS_HEROKU:
         db.setex(namespace + room, REDIS_TTL_S, pickle.dumps(state))
@@ -346,11 +351,23 @@ def handle_exit():
         for room in ROUTERS:
             save_game_state(ROUTER_NAMESPACE, room, ROUTERS[room])        
 
+def load_from_db():
+    if IS_HEROKU:
+        for key in db.scan_iter():
+            if key.startswith(ROOM_NAMESPACE):
+                room = remove_prefix(key, ROOM_NAMESPACE)
+                ROOMS[room] = pickle.loads(db.get(key))
+            elif key.startswith(ROUTER_NAMESPACE):
+                room = remove_prefix(key, ROUTER_NAMESPACE)
+                ROUTERS[room] = pickle.loads(db.get(key))        
+
 if __name__ == '__main__':
     if IS_HEROKU:
         atexit.register(handle_exit)
         signal.signal(signal.SIGTERM, handle_exit)
         signal.signal(signal.SIGINT, handle_exit)
+
+        load_from_db()
 
     port = int(os.environ.get("PORT", 5000))
     socketio.run(app, host='0.0.0.0', port=port, debug=True)
