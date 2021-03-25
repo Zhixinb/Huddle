@@ -11,10 +11,40 @@
         </v-icon>
     </v-btn>
     <h3 :style="{'color': index === 0 ? 'steelblue' : 'red'}">{{type}}</h3>
+    <v-text-field v-if="type=='Circle' || type=='Rectangle' || type=='Textbox' || type=='Slider' "
+        v-model="prop.x"
+        label="X"
+        v-on:input="prop_changed('x', Number($event))"
+    ></v-text-field>
+    <v-text-field v-if="type=='Circle' || type=='Rectangle' || type=='Textbox' || type=='Slider' "
+        v-model="prop.y"
+        label="Y"
+        v-on:input="prop_changed('y', Number($event))"
+    ></v-text-field>
+    <v-text-field v-if="type=='Circle'"
+        v-model="prop.radius"
+        label="Radius"
+        v-on:input="prop_changed('radius', Number($event))"
+    ></v-text-field>
+    <v-text-field v-if="type=='Rectangle'"
+        v-model="prop.width"
+        label="Width"
+        v-on:input="prop_changed('width', Number($event))"
+    ></v-text-field>
+    <v-text-field v-if="type=='Rectangle'"
+        v-model="prop.length"
+        label="Length"
+        v-on:input="prop_changed('length', Number($event))"
+    ></v-text-field>
     <v-text-field v-if="type=='Textbox'"
-        v-model="text"
+        v-model="prop.text"
         label="Text"
-        v-on:input="text_changed($event)"
+        v-on:input="prop_changed('text', String($event))"
+    ></v-text-field>
+    <v-text-field v-if="type=='Slider'"
+        v-model="prop.value"
+        label="Value"
+        v-on:input="prop_changed('value', Number($event))"
     ></v-text-field>
     <v-select v-if="index === 0"
         v-model="selectedSignal"
@@ -41,19 +71,19 @@ export default {
         type: String,
         c_id: String,
         s_id: String,
-        t: String,
+        p: Object,
         items: Array
     },
     data() {
         return { 
-            text: this.t,
+            prop: this.p,
             selectedSlot: '',
             selectedSignal: ''
         }
     },
     methods: {
-        text_changed(event) {
-            this.$emit('text_changed', {c_id: this.c_id, s_id: this.s_id, text: event})
+        prop_changed(key, value) {
+            this.$emit('property_changed', {c_id: this.c_id, s_id: this.s_id, key: key, value: value})
         },
         selected_signal(event) {
             this.$emit('signal_changed', event)

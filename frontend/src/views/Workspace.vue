@@ -16,10 +16,10 @@
             <v-list-item v-if="selected_widgets.length > 0">
                 <v-list-item-content>
                     <Property :index="0" :c_id="selected_widgets[0]" :s_id="curr_slide_id" :type="slides[curr_slide_id]['components'][selected_widgets[0]].type_name"
-                            :t="slides[curr_slide_id]['components'][selected_widgets[0]].text" 
+                            :p="slides[curr_slide_id]['components'][selected_widgets[0]]" 
                             :items="signals"
                             :key="selected_widgets[0]"
-                            @text_changed="text_changed"
+                            @property_changed="property_changed"
                             @signal_changed="signal_changed"
                             @deselect_clicked="deselect_clicked"/>
                 </v-list-item-content>
@@ -37,10 +37,10 @@
             <v-list-item v-if="selected_widgets.length > 1">
                 <v-list-item-content>
                     <Property :index="1" :c_id="selected_widgets[1]" :s_id="curr_slide_id" :type="slides[curr_slide_id]['components'][selected_widgets[1]].type_name"
-                            :t="slides[curr_slide_id]['components'][selected_widgets[1]].text" 
+                            :p="slides[curr_slide_id]['components'][selected_widgets[1]]" 
                             :items="slots"
                             :key="selected_widgets[1]"
-                            @text_changed="text_changed"
+                            @property_changed="property_changed"
                             @slot_changed="slot_changed"
                             @deselect_clicked="deselect_clicked"/>
                 </v-list-item-content>
@@ -218,7 +218,7 @@ export default {
         fields: [],
         count: 0,
 
-        expression: '',
+        expression: 'x',
         signal: '',
         slot: '',
         signals: [],
@@ -233,7 +233,7 @@ export default {
     }),
     created() {
         window.addEventListener('keydown', (e) => {
-            if (this.focus && (e.key === 'Backspace' || e.key === 'Delete')) {
+            if (this.focus && (e.key === 'Delete')) {
                 const params = {
                 uid: this.$store.getters.uid,
                 room: this.$store.getters.room,
@@ -398,6 +398,18 @@ export default {
                 s_id: value.s_id,
                 c_id: value.c_id,
                 changes: {"text": value.text}
+            }
+            this.$socket.emit('update_component_id', params)
+        },
+        property_changed: function (event) {
+            const changes = {}
+            changes[event.key] = event.value
+            const params = {
+                uid: this.$store.getters.uid,
+                room: this.$store.getters.room,
+                s_id: event.s_id,
+                c_id: event.c_id,
+                changes: changes
             }
             this.$socket.emit('update_component_id', params)
         },
