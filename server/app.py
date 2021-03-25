@@ -73,7 +73,7 @@ def on_join(data):
              'new_state': room_data})
 
     else:
-        emit('error', {'error': 'Unable to join room. Room does not exist.'})
+        emit('error', {'error': 'Unable to join room. Room does not exist: ' + room})
 
 
 @socketio.on('leave')

@@ -2,7 +2,7 @@
 <div class="absolute" :width="width" :height="length" 
     :style="style">
     <svg :width="width" :height="length">
-        <rect :width="width" :height="length" fill="blue" />
+        <rect :width="width" :height="length" :fill="'rgb(' + rgba.r + ',' + rgba.g + ',' + rgba.b + ')'" :fill-opacity="rgba.a"/>
     </svg>
 </div>
 </template>
@@ -40,6 +40,9 @@ export default {
         },
         focus: {
             type: Boolean
+        },
+        rgba: {
+            type: Object
         }
     },
     computed: {

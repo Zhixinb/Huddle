@@ -1,7 +1,7 @@
 <template>
 <div class="absolute" :style="style">
         <svg :width="radius*2" :height="radius*2">
-            <circle :cx="radius" :cy="radius" :r="radius" fill="blue" />
+            <circle :cx="radius" :cy="radius" :r="radius" :fill="'rgb(' + rgba.r + ',' + rgba.g + ',' + rgba.b + ')'" :fill-opacity="rgba.a"/>
         </svg>
 </div>
 </template>
@@ -36,6 +36,9 @@ export default {
         },
         focus: {
             type: Boolean
+        },
+        rgba: {
+            type: Object
         }
     },
     computed: {
