@@ -9,7 +9,6 @@
           v-bind="attrs"
           v-on="on"
           v-on:click="onClick"
-          class='ma-1'
         >
           Upload
         </v-list-item>
