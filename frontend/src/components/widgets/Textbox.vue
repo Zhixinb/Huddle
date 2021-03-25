@@ -1,7 +1,7 @@
 <template>
-    <div class="absolute" :style="style">
-        {{text}}
-    </div>
+    <div class="absolute" :style="style">        
+        <div class="ql-editor" v-html="text"></div>                        
+    </div>   
 </template>
 
 <script>

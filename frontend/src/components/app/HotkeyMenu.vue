@@ -9,8 +9,6 @@
           v-bind="attrs"
           v-on="on"
           v-on:click="onClick"
-          class='ma-1'
-          max-width="70"
         >
           Hotkeys
         </v-list-item>

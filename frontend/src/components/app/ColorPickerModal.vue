@@ -10,6 +10,8 @@
           dark
           v-bind="attrs"
           v-on="on"
+          class='ma-1'
+          block
         >
           Edit Color
         </v-btn>
@@ -49,13 +51,7 @@
 
 <script>
   export default {    
-    props: {
-        c_id: {
-            type: String
-        },
-        s_id: {
-            type: String
-        },        
+    props: {     
         rgba: {
             type: Object
         }

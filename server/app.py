@@ -52,6 +52,12 @@ def on_create(data):
     # for index, r in enumerate(list(ROOMS.values())):
     #     print(str(index) + ":" + json.dumps(r.to_json()), file=sys.stderr)
 
+@socketio.on('get_rooms')
+def on_get_rooms(data):
+    uid = data['uid']
+    user_room = [room_key for room_key,
+                 workspace in ROOMS.items() if workspace.has_access(uid)]
+    emit('created_room', {'rooms': user_room})
 
 @socketio.on('join')
 def on_join(data):
