@@ -16,10 +16,10 @@
             <v-list-item v-if="selected_widgets.length > 0">
                 <v-list-item-content>
                     <Property :index="0" :c_id="selected_widgets[0]" :s_id="curr_slide_id" :type="slides[curr_slide_id]['components'][selected_widgets[0]].type_name"
-                            :t="slides[curr_slide_id]['components'][selected_widgets[0]].text" 
+                            :p="slides[curr_slide_id]['components'][selected_widgets[0]]" 
                             :items="signals"
                             :key="selected_widgets[0]"
-                            @text_changed="text_changed"
+                            @property_changed="property_changed"
                             @signal_changed="signal_changed"
                             @deselect_clicked="deselect_clicked"/>
                 </v-list-item-content>
@@ -37,10 +37,10 @@
             <v-list-item v-if="selected_widgets.length > 1">
                 <v-list-item-content>
                     <Property :index="1" :c_id="selected_widgets[1]" :s_id="curr_slide_id" :type="slides[curr_slide_id]['components'][selected_widgets[1]].type_name"
-                            :t="slides[curr_slide_id]['components'][selected_widgets[1]].text" 
+                            :p="slides[curr_slide_id]['components'][selected_widgets[1]]" 
                             :items="slots"
                             :key="selected_widgets[1]"
-                            @text_changed="text_changed"
+                            @property_changed="property_changed"
                             @slot_changed="slot_changed"
                             @deselect_clicked="deselect_clicked"/>
                 </v-list-item-content>
@@ -152,9 +152,9 @@
                     <Textbox v-if="preview !== null && preview.type_name == 'Textbox'"
                         :x="w * preview.x" :y="h * preview.y" :text="preview.text" :style="style"/>
                     <MyCircle v-else-if="preview !== null && preview.type_name == 'Circle'" 
-                        :x="w * preview.x" :y="h * preview.y" :radius="preview.radius" :style="style"/>
+                        :x="w * preview.x" :y="h * preview.y" :radius="preview.radius" :rgba="preview.rgba" :style="style"/>
                     <MyRect v-else-if="preview !== null && preview.type_name == 'Rectangle'" 
-                        :x="w * preview.x" :y="h * preview.y" :width="preview.width" :length="preview.length" :style="style"/>
+                        :x="w * preview.x" :y="h * preview.y" :width="preview.width" :length="preview.length" :rgba="preview.rgba" :style="style"/>
                     <Slider v-else-if="preview !== null && preview.type_name == 'Slider'" 
                         :x="w * preview.x" :y="h * preview.y" :value="preview.value" :style="style"/>
                   <!-- TODO: fix empty list error, check slides.length before accessing component -->
@@ -169,12 +169,12 @@
                         </div>
                         <div v-else-if="c.type_name === 'Circle'" draggable v-on:click="widgetClicked($event, c.s_id, c.c_id)"
                             v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
-                            <MyCircle :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :radius="c.radius" 
+                            <MyCircle :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :radius="c.radius" :rgba="c.rgba"
                                 :style="style" :glow="glow(c.c_id)" :glow_color="glow_color(c.c_id)" :focus="is_focus(c.c_id)"/>
                         </div>
                         <div v-else-if="c.type_name == 'Rectangle'" draggable v-on:click="widgetClicked($event, c.s_id, c.c_id)"
                             v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
-                            <MyRect :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :width="c.width" :length="c.length" 
+                            <MyRect :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :width="c.width" :length="c.length" :rgba="c.rgba"
                                 :style="style" :glow="glow(c.c_id)" :glow_color="glow_color(c.c_id)" :focus="is_focus(c.c_id)"/>
                         </div>
                         <div v-else-if="c.type_name == 'Slider'" draggable v-on:click="widgetClicked($event, c.s_id, c.c_id)"
@@ -230,12 +230,13 @@ export default {
         fields: [],
         count: 0,
 
-        expression: '',
+        expression: 'x',
         signal: '',
         slot: '',
         signals: [],
         slots: [],
         focus: '',
+        default_color: {r: 0, g: 100, b: 255, a: 0.75},
 
         // Dragging elements state
         preview: null,
@@ -245,7 +246,7 @@ export default {
     }),
     created() {
         window.addEventListener('keydown', (e) => {
-            if (this.focus && (e.key === 'Backspace' || e.key === 'Delete')) {
+            if (this.focus && (e.key === 'Delete')) {
                 const params = {
                 uid: this.$store.getters.uid,
                 room: this.$store.getters.room,
@@ -413,6 +414,18 @@ export default {
             }
             this.$socket.emit('update_component_id', params)
         },
+        property_changed: function (event) {
+            const changes = {}
+            changes[event.key] = event.value
+            const params = {
+                uid: this.$store.getters.uid,
+                room: this.$store.getters.room,
+                s_id: event.s_id,
+                c_id: event.c_id,
+                changes: changes
+            }
+            this.$socket.emit('update_component_id', params)
+        },
         signal_changed: function(value) {
             this.signal = value;
             this.slots = this.compute_slots()
@@ -438,7 +451,7 @@ export default {
             this.signals = this.compute_signals()
             this.slot = ""
             this.slots = this.compute_slots()
-        },
+        },    
         toggle() {
             this.$refs['fullscreen'].toggle()
         },
@@ -460,9 +473,9 @@ export default {
             if (widget === 'textbox') {
                 this.preview = new TextWidget(-1, this.curr_slide_id, 0, 0, "Text");
             } else if (widget === 'circle') {
-                this.preview = new CircleWidget(-1, this.curr_slide_id, 0, 0, 25)
+                this.preview = new CircleWidget(-1, this.curr_slide_id, 0, 0, 25, this.default_color)
             } else if (widget === 'rectangle') {
-                this.preview = new RectWidget(-1, this.curr_slide_id, 0, 0, 50, 50)
+                this.preview = new RectWidget(-1, this.curr_slide_id, 0, 0, 50, 50, this.default_color)
             } else if (widget === 'slider') {
                 this.preview = new SliderWidget(-1, this.curr_slide_id, 0, 0, 50)
             } else {
