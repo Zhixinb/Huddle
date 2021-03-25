@@ -46,23 +46,23 @@
                     label="Length"
                     v-on:input="property_changed('length', Number($event))"
                 ></v-text-field>
-                <v-text-field v-if="type=='Textbox'"
-                    v-model="prop.text"
-                    label="Text"
-                    v-on:input="property_changed('text', String($event))"
-                ></v-text-field>
+
+                <text-editor-modal v-if="type=='Textbox'" :textContent="prop.text"
+                @property_changed="property_changed('text', String($event))"/>
+                
                 <v-text-field v-if="type=='Slider'"
                     v-model="prop.value"
                     label="Value"
                     v-on:input="property_changed('value', Number($event))"
                 ></v-text-field>
 
-                <color-picker-modal :c_id="c_id" :s_id="s_id" :rgba="prop.rgba"
+                <color-picker-modal :rgba="prop.rgba"
                 @property_changed="property_changed('rgba', $event)" />
             </v-expansion-panel-content>
         </v-expansion-panel>
     </v-expansion-panels>
-        
+    
+
     <v-select v-if="index === 0"
         v-model="selectedSignal"
         :items="items"
@@ -81,11 +81,13 @@
 
 <script>
 import ColorPickerModal from '../app/ColorPickerModal.vue'
+import TextEditorModal from '../app/TextEditorModal.vue'
 
 export default {
     name: 'Property',
     components: {
-        ColorPickerModal
+        ColorPickerModal,
+        TextEditorModal
     },
     props: {
         index: Number,
