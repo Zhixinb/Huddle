@@ -97,14 +97,47 @@
              </template>
              <span>New Circle</span>
         </v-tooltip>
-        <v-tooltip bottom>
-            <template v-slot:activator="{ on, attrs }">
-                <v-btn icon v-bind="attrs" v-on="on" id="image" draggable v-on:dragstart="dragStart" v-on:dragend="dragEnd" :disabled='!can_share'>
-                    <v-icon>mdi-image</v-icon>
-                </v-btn>
-            </template>
-            <span>New Image</span>
-        </v-tooltip>
+        <template>
+            
+            <v-dialog
+            v-model="dialog"
+            persistent
+            max-width="400"
+            >
+            
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn icon v-bind="attrs" v-on="on" id="image" :disabled='!can_share'>
+                        <v-icon>mdi-image</v-icon>
+                    </v-btn>
+                </template>
+                
+                <v-card class='pa-4 mx-auto'>
+                        <v-card-title class="headline">
+                        Upload Image File
+                        </v-card-title>
+
+
+                        <v-file-input
+                        truncate-length="15"
+                        accept='.jpg, .jpeg, .png'
+                        label='File input'
+                        @change="on_image_input"
+                        ></v-file-input>
+
+                        <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                            color="green darken-1"
+                            text
+                            @click="dialog = false"
+                        >
+                            Done
+                        </v-btn>
+                        </v-card-actions>
+                    </v-card>
+            
+            </v-dialog>
+        </template>
         <v-tooltip bottom>
              <template v-slot:activator="{ on, attrs }">
                 <v-btn icon v-bind="attrs" v-on="on" id="textbox" draggable v-on:dragstart="dragStart" v-on:dragend="dragEnd" :disabled='!can_share'>
@@ -240,6 +273,7 @@ export default {
         signals: [],
         slots: [],
         focus: '',
+        dialog: false,
 
         // Dragging elements state
         preview: null,
@@ -610,6 +644,34 @@ export default {
             const slot_c_id = this.selected_widgets[1]
             const bc = this.slides[this.curr_slide_id]["backward_connections"][slot_c_id]
             return bc !== undefined && this.slot in bc && (bc[this.slot][0] === signal_c_id && bc[this.slot][1] === this.signal)
+        },
+        on_image_input(file) {
+            //event.dataTransfer.setDragImage(document.createElement('div'), 0, 0);
+            if (file) {
+                var reader = new FileReader()
+                var url = ''
+                
+                reader.onload = function(event) {
+                    url = event.target.result
+                }
+                //var url = reader.readAsDataURL(file)
+                // console.log(file[0])
+                // var url = URL.createObjectURL(file[0])
+                // console.log(url)
+
+                this.preview = new ImageWidget(-1, this.curr_slide_id, 0.26, 0.18, "https://cdn.vuetifyjs.com/images/parallax/material.jpg", 50, 50)
+                if (this.preview != null) {
+                    const params = {
+                        uid: this.$store.getters.uid,
+                        room: this.$store.getters.room,
+                        component: this.preview
+                    }
+                    this.$socket.emit('new_component', params)
+                    dbHelper.logMetric("ComponentCreated")
+                }
+                this.preview = null;
+            }
+
         },
         async redirectToLogin() {
             this.$router.push({ name: 'Login'})
