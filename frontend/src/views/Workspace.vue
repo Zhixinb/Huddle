@@ -98,6 +98,14 @@
              <span>New Circle</span>
         </v-tooltip>
         <v-tooltip bottom>
+            <template v-slot:activator="{ on, attrs }">
+                <v-btn icon v-bind="attrs" v-on="on" id="image" draggable v-on:dragstart="dragStart" v-on:dragend="dragEnd" :disabled='!can_share'>
+                    <v-icon>mdi-image</v-icon>
+                </v-btn>
+            </template>
+            <span>New Image</span>
+        </v-tooltip>
+        <v-tooltip bottom>
              <template v-slot:activator="{ on, attrs }">
                 <v-btn icon v-bind="attrs" v-on="on" id="textbox" draggable v-on:dragstart="dragStart" v-on:dragend="dragEnd" :disabled='!can_share'>
                     <v-icon>mdi-format-textbox</v-icon>
@@ -144,6 +152,8 @@
                         :x="w * preview.x" :y="h * preview.y" :radius="preview.radius" :style="style"/>
                     <MyRect v-else-if="preview !== null && preview.type_name == 'Rectangle'" 
                         :x="w * preview.x" :y="h * preview.y" :width="preview.width" :length="preview.length" :style="style"/>
+                    <MyImage v-else-if="preview !== null && preview.type_name == 'Image'" 
+                        :x="w * preview.x" :y="h * preview.y" :src="preview.src" :width="preview.width" :length="preview.length" :style="style"/>
                     <Slider v-else-if="preview !== null && preview.type_name == 'Slider'" 
                         :x="w * preview.x" :y="h * preview.y" :value="preview.value" :style="style"/>
                   <!-- TODO: fix empty list error, check slides.length before accessing component -->
@@ -164,6 +174,11 @@
                         <div v-else-if="c.type_name == 'Rectangle'" draggable v-on:click="widgetClicked($event, c.s_id, c.c_id)"
                             v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
                             <MyRect :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :width="c.width" :length="c.length" 
+                                :style="style" :glow="glow(c.c_id)" :glow_color="glow_color(c.c_id)" :focus="is_focus(c.c_id)"/>
+                        </div>
+                        <div v-else-if="c.type_name == 'Image'" draggable v-on:click="widgetClicked($event, c.s_id, c.c_id)"
+                            v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
+                            <MyImage :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :src="c.src" :width="c.width" :length="c.length" 
                                 :style="style" :glow="glow(c.c_id)" :glow_color="glow_color(c.c_id)" :focus="is_focus(c.c_id)"/>
                         </div>
                         <div v-else-if="c.type_name == 'Slider'" draggable v-on:click="widgetClicked($event, c.s_id, c.c_id)"
@@ -194,10 +209,11 @@ import Property from '../components/properties/Property.vue';
 import Textbox from '../components/widgets/Textbox.vue';
 import Circle from '../components/widgets/Circle.vue';
 import Rect from '../components/widgets/Rect.vue';
+import Image from '../components/widgets/Image.vue'
 import Slider from '../components/widgets/Slider.vue';
 import Line from '../components/widgets/Line.vue';
 //import FileSaver from '../plugins/FileSaver.js'
-import {Widget, Circle as CircleWidget, Rectangle as RectWidget, 
+import {Widget, Circle as CircleWidget, Rectangle as RectWidget, Image as ImageWidget,
         Textbox as TextWidget, Slider as SliderWidget} from '../models/widget.js';
 import { generate_lines } from '../utils/util.js'
 import UserDropdown from '../components/app/UserDropdown.vue';
@@ -239,8 +255,29 @@ export default {
                 room: this.$store.getters.room,
                 s_id: this.curr_slide_id,
                 c_id: this.focus
-            }
+                }
             this.$socket.emit('remove_component', params)
+            }
+
+            e.stopImmediatePropagation()
+            
+            if (e.key === 'ArrowLeft') {
+                if (this.curr_slide_id != '0') {
+                    //console.log(this.curr_slide_id)
+                    var slide_id_int = parseInt(this.curr_slide_id)
+                    slide_id_int = slide_id_int - 1
+                    this.update_slide('' + slide_id_int)
+                }
+            }
+
+            if (e.key === 'ArrowRight') {
+                // console.log(this.curr_slide_id)
+                if (this.curr_slide_id != ('' + (Object.keys(this.slides).length - 1))) {
+                    //console.log(this.curr_slide_id)
+                    var slide_id_int = parseInt(this.curr_slide_id)
+                    slide_id_int = slide_id_int + 1
+                    this.update_slide('' + slide_id_int)
+                }
             }
         });
         if (this.$store.getters.uid === null) {
@@ -453,7 +490,10 @@ export default {
                 this.preview = new RectWidget(-1, this.curr_slide_id, 0, 0, 50, 50)
             } else if (widget === 'slider') {
                 this.preview = new SliderWidget(-1, this.curr_slide_id, 0, 0, 50)
-            } else {
+            } else if (widget === 'image') {
+                this.preview = new ImageWidget(-1, this.curr_slide_id, 0, 0, 'https://cdn.vuetifyjs.com/images/parallax/material.jpg', 50, 50)
+            }
+            else {
                 this.preview = null;
             }
         },
@@ -580,6 +620,7 @@ export default {
         Textbox,
         'MyCircle': Circle,
         'MyRect': Rect,
+        'MyImage': Image,
         Slider,
         'MyLine': Line,
         PermissionModal,

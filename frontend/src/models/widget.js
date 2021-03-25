@@ -24,6 +24,14 @@ Widget.signals = {
             return length;
         }
     },
+    "Image": {
+        "width_changed": function(width) {
+            return width;
+        },
+        "length_changed": function(length) {
+            return length;
+        }
+    },
     "Textbox": {
     },
     "Slider": {
@@ -41,6 +49,14 @@ Widget.slots = {
         }
     },
     "Rectangle": {
+        "update_width":  function(value) {
+            return {"width": value}
+        },
+        "update_length": function(value) {
+            return {"length": value}
+        }
+    },
+    "Image": {
         "update_width":  function(value) {
             return {"width": value}
         },
@@ -81,6 +97,8 @@ Widget.copy = function(widget) {
         return new Circle(widget.c_id, widget.s_id, widget.x, widget.y, widget.radius, widget.type_name)
     } else if (widget.type_name === "Rectangle") {
         return new Rectangle(widget.c_id, widget.s_id, widget.x, widget.y, widget.width, widget.length, widget.type_name)
+    } else if (widget.type_name === "Image") {
+        return new Image(widget.c_id, widget.s_id, widget.x, widget.y, widget.src, widget.width, widget.length, widget.type_name)
     } else if (widget.type_name === "Slider") {
         return new Slider(widget.c_id, widget.s_id, widget.x, widget.y, widget.value, widget.type_name)
     }
@@ -105,6 +123,16 @@ function Rectangle(c_id, s_id, x, y, width, length) {
 Rectangle.prototype = Object.create(Widget.prototype)
 Rectangle.prototype.constructor = Rectangle;
 
+function Image(c_id, s_id, x, y, src, width, length) {
+    Widget.call(this, c_id, s_id, x, y, "Image");
+    this.src = src;
+    this.width = width;
+    this.length = length;
+}
+
+Image.prototype = Object.create(Widget.prototype)
+Image.prototype.constructor = Image;
+
 function Textbox(c_id, s_id, x, y, text) {
     Widget.call(this, c_id, s_id, x, y, "Textbox");
     this.text = text;
@@ -121,4 +149,4 @@ function Slider(c_id, s_id, x, y, value) {
 Slider.prototype = Object.create(Widget.prototype)
 Slider.prototype.constructor = Slider;
 
-export {Widget, Circle, Rectangle, Textbox, Slider};
+export {Widget, Circle, Rectangle, Image, Textbox, Slider};
