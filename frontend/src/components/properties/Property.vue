@@ -12,7 +12,7 @@
     </v-btn>
     <h3 :style="{'color': index === 0 ? 'steelblue' : 'red'}">{{type}}</h3>
 
-    <v-expansion-panels accordion>
+    <v-expansion-panels accordion multiple>
         <v-expansion-panel class="elevation-0">
             <v-expansion-panel-header> Position </v-expansion-panel-header>
             <v-expansion-panel-content>
