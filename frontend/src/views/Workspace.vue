@@ -13,6 +13,17 @@
 
     <v-navigation-drawer app clipped right v-if="can_share">
         <v-list>
+            <v-tooltip slot="append" left> 
+                <template v-slot:activator="{ on, attrs }">
+                    <v-icon v-on="on" color="primary" dark>
+                        mdi-information
+                    </v-icon>
+                </template>
+                <span>An expression is a transformation applied from the signal to slot <br/>
+                    Enter 1 for no scaling or any constant<br/> 
+                    Enter a function of x for more complex transformations
+                </span>
+            </v-tooltip>
             <v-list-item v-if="selected_widgets.length > 0">
                 <v-list-item-content>
                     <Property :index="0" :c_id="selected_widgets[0]" :s_id="curr_slide_id" :type="slides[curr_slide_id]['components'][selected_widgets[0]].type_name"
@@ -46,12 +57,23 @@
                 </v-list-item-content>
             </v-list-item>
             <v-list-item>
-                <v-list-item-content>
+                <v-list-item-content v-if="valid()"> 
                     <v-text-field
-                        v-if="valid()"
                         v-model="expression"
                         label="Expression"
-                    ></v-text-field>
+                        >
+                        <v-tooltip slot="append" left> 
+                            <template v-slot:activator="{ on, attrs }">
+                                <v-icon v-on="on" color="primary" dark>
+                                    mdi-information
+                                </v-icon>
+                            </template>
+                            <span>An expression is a transformation applied from the signal to slot <br/>
+                                Enter 1 for no scaling or any constant<br/> 
+                                Enter a function of x for more complex transformations
+                            </span>
+                        </v-tooltip>
+                    </v-text-field>
                 </v-list-item-content>
             </v-list-item>
         </v-list>
@@ -214,6 +236,7 @@ export default {
         curr_room_id: '',
         curr_slide_id: '0',
         fullscreen: false,
+        show: false,
         scale: 1,
         fields: [],
         count: 0,
