@@ -14,7 +14,7 @@
     <v-text-field v-if="type=='Textbox'"
         v-model="text"
         label="Text"
-        @change="text_changed($event)"
+        v-on:input="text_changed($event)"
     ></v-text-field>
     <v-select v-if="index === 0"
         v-model="selectedSignal"
