@@ -20,7 +20,7 @@
                     </v-icon>
                 </template>
                 <span>An expression is a transformation applied from the signal to slot <br/>
-                    Enter 1 for no scaling or any constant<br/> 
+                    Enter 1 or any constant for scaling<br/> 
                     Enter a function of x for more complex transformations
                 </span>
             </v-tooltip>
@@ -69,7 +69,7 @@
                                 </v-icon>
                             </template>
                             <span>An expression is a transformation applied from the signal to slot <br/>
-                                Enter 1 for no scaling or any constant<br/> 
+                                Enter 1 or any constant for scaling<br/> 
                                 Enter a function of x for more complex transformations
                             </span>
                         </v-tooltip>
