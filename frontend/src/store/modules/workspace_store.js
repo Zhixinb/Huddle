@@ -10,7 +10,8 @@ export default ({
     role: '',
     keymap: {},
     lines: [],
-    selected_widgets: []
+    selected_widgets: [],
+    curr_slide_id: 0
   },
   getters: {
     whitelist (state) {
@@ -36,6 +37,9 @@ export default ({
     },
     selected_widgets (state) {
       return state.selected_widgets
+    },
+    curr_slide_id (state) {
+        return state.curr_slide_id
     }
   },
   mutations: {
@@ -65,6 +69,9 @@ export default ({
     },
     set_selected_widgets(state, payload) {
       state.selected_widgets = payload
+    },
+    set_curr_slide_id(state, payload) {
+        state.curr_slide_id = payload
     }
   },
   actions: {
@@ -101,6 +108,10 @@ export default ({
         context.commit('set_slides', message.new_state)
         const slides = context.getters.slides
         const selected_widgets = context.getters.selected_widgets
+        const curr_slide_id = context.getters.curr_slide_id
+        if (!(curr_slide_id in slides)) {
+            context.commit('set_curr_slide_id', Object.keys(slides)[0])
+        }
         if ('s_id' in message) {
           if ('c_id' in message) {
             context.commit('set_selected_widgets', selected_widgets.filter(e => e !== message['c_id']))

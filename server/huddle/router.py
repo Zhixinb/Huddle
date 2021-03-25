@@ -37,3 +37,6 @@ class Router(object):
     def remove_component(self, sid, cid):
         self.state_manager.remove_component(sid, cid)
 
+    def remove_slide(self, sid):
+        self.state_manager.remove_slide(sid)
+

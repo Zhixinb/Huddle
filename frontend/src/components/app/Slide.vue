@@ -1,7 +1,7 @@
 <template>
     <v-fade-transition appear>
         <div class="pa-2">
-            <v-card id="preview" width=100% :height='h'>
+            <v-card id="preview" width=100% :height='h' :style="card_style">
                 <div>
                     <div v-for="c in slides[id].components" :key="c.c_id">
                         <div v-if="c.type_name === 'Textbox'">
@@ -43,6 +43,9 @@ export default {
     props: {
         id: {
             type: String
+        },
+        focus: {
+            type: Boolean
         }
     },
     mounted() {
@@ -64,6 +67,13 @@ export default {
                 transform: 'scale(' + this.scale + ')',
                 transformOrigin: 'top left'
             }
+        },
+        card_style () {
+            var base = {}
+            if (this.focus) {
+                base.border = '3px dashed green'
+            }
+            return base
         }
     }
 }

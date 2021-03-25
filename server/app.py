@@ -309,6 +309,21 @@ def on_remove_component(data):
     else:
         emit('error', {'error': 'Unable to remove component'})
 
+@socketio.on('remove_slide')
+def on_remove_slide(data):
+    uid = data['uid']
+    room = data['room']
+    sid = data['s_id']
+    if room in ROOMS:
+        router = ROUTERS[room]
+        router.remove_slide(sid)
+        room_data = router.get_state()
+
+        emit('update_slides_result', {
+            'new_state': room_data}, room=room)
+    else:
+        emit('error', {'error': 'Unable to remove slide'})
+
 @socketio.on('upload_json')
 def on_upload_json(data):
     uid = data['uid']

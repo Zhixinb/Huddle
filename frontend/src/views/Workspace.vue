@@ -3,9 +3,9 @@
     
     <v-navigation-drawer app clipped>
         <v-list dense>
-            <v-list-item v-for="s in slides" :key="s.id" link @click.stop="update_slide(s.id)">
+            <v-list-item v-for="s in slides" :key="s.id" link @click.stop="update_slide(s.id)" :style="curr_slide_id === s.id ? {'background-color': 'lightblue'} : {}">
                 <v-list-item-content>
-                    <slide :id="s.id"> </slide>
+                    <slide :id="s.id" :focus="is_slide_focus(s.id)"> </slide>
                 </v-list-item-content>
             </v-list-item>
         </v-list>
@@ -223,7 +223,6 @@ export default {
     name: 'Workspace',    
     data: () => ({
         curr_room_id: '',
-        curr_slide_id: '0',
         fullscreen: false,
         show: false,
         scale: 1,
@@ -247,13 +246,26 @@ export default {
     created() {
         window.addEventListener('keydown', (e) => {
             if (this.focus && (e.key === 'Delete')) {
-                const params = {
-                uid: this.$store.getters.uid,
-                room: this.$store.getters.room,
-                s_id: this.curr_slide_id,
-                c_id: this.focus
-            }
-            this.$socket.emit('remove_component', params)
+                if (this.focus === 'slide') {
+                    var keys = Object.keys(this.slides)
+                    const found = keys.find(e => e !== this.curr_slide_id)
+                    if (found) {
+                        const params = {
+                            uid: this.$store.getters.uid,
+                            room: this.$store.getters.room,
+                            s_id: this.curr_slide_id
+                        }
+                        this.$socket.emit('remove_slide', params)
+                    }
+                } else {
+                    const params = {
+                        uid: this.$store.getters.uid,
+                        room: this.$store.getters.room,
+                        s_id: this.curr_slide_id,
+                        c_id: this.focus
+                    }
+                    this.$socket.emit('remove_component', params)
+                }
             }
         });
         if (this.$store.getters.uid === null) {
@@ -285,14 +297,16 @@ export default {
     methods:
     {
         ...mapMutations(['set_room']),
-        ...mapMutations('ws', ['set_lines', 'set_selected_widgets']),
+        ...mapMutations('ws', ['set_lines', 'set_selected_widgets', 'set_curr_slide_id']),
         update_slide(id) {
-            this.curr_slide_id = id;
+            this.set_curr_slide_id(id);
             this.signal = ""
             this.slot = ""
             this.signals = []
             this.slots = []
+            this.focus = 'slide'
             this.set_selected_widgets([])
+            this.set_lines([])
         },
         append_slide() {
             const params = {
@@ -324,6 +338,9 @@ export default {
         },
         is_focus: function(c_id) {
             return this.focus === c_id
+        },
+        is_slide_focus: function(s_id) {
+            return this.curr_slide_id === s_id && this.focus === 'slide'
         },
         generate_slot_changes: function(s_id, c_id, changes) {
             const connections = this.slides[s_id]["connections"]
@@ -616,7 +633,7 @@ export default {
     },
     computed: {
         ...mapState(['workspace']),
-        ...mapState('ws', ['role', 'slides', 'can_share', 'lines', 'selected_widgets']),
+        ...mapState('ws', ['role', 'slides', 'can_share', 'lines', 'selected_widgets', 'curr_slide_id']),
         style () {
             return {
                 transform: 'scale(' + this.scale + ')',
