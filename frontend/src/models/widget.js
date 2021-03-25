@@ -78,28 +78,30 @@ Widget.copy = function(widget) {
     if (widget.type_name === "Textbox") {
         return new Textbox(widget.c_id, widget.s_id, widget.x, widget.y, widget.text, widget.type_name)
     } else if (widget.type_name === "Circle") {
-        return new Circle(widget.c_id, widget.s_id, widget.x, widget.y, widget.radius, widget.type_name)
+        return new Circle(widget.c_id, widget.s_id, widget.x, widget.y, widget.radius, widget.rgba, widget.type_name)
     } else if (widget.type_name === "Rectangle") {
-        return new Rectangle(widget.c_id, widget.s_id, widget.x, widget.y, widget.width, widget.length, widget.type_name)
+        return new Rectangle(widget.c_id, widget.s_id, widget.x, widget.y, widget.width, widget.length, widget.rgba, widget.type_name)
     } else if (widget.type_name === "Slider") {
         return new Slider(widget.c_id, widget.s_id, widget.x, widget.y, widget.value, widget.type_name)
     }
     return null;
 }
 
-function Circle(c_id, s_id, x, y, radius) {
+function Circle(c_id, s_id, x, y, radius, rgba) {
     Widget.call(this, c_id, s_id, x, y, "Circle");
     this.radius = radius;
+    this.rgba = rgba;
 }
 
 //TODO: make the type a default
 Circle.prototype = Object.create(Widget.prototype)
 Circle.prototype.constructor = Circle;
 
-function Rectangle(c_id, s_id, x, y, width, length) {
+function Rectangle(c_id, s_id, x, y, width, length, rgba) {
     Widget.call(this, c_id, s_id, x, y, "Rectangle");
     this.width = width;
     this.length = length;
+    this.rgba = rgba;
 }
 
 Rectangle.prototype = Object.create(Widget.prototype)

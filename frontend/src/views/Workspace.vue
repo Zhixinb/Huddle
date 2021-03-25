@@ -141,9 +141,9 @@
                     <Textbox v-if="preview !== null && preview.type_name == 'Textbox'"
                         :x="w * preview.x" :y="h * preview.y" :text="preview.text" :style="style"/>
                     <MyCircle v-else-if="preview !== null && preview.type_name == 'Circle'" 
-                        :x="w * preview.x" :y="h * preview.y" :radius="preview.radius" :style="style"/>
+                        :x="w * preview.x" :y="h * preview.y" :radius="preview.radius" :rgba="preview.rgba" :style="style"/>
                     <MyRect v-else-if="preview !== null && preview.type_name == 'Rectangle'" 
-                        :x="w * preview.x" :y="h * preview.y" :width="preview.width" :length="preview.length" :style="style"/>
+                        :x="w * preview.x" :y="h * preview.y" :width="preview.width" :length="preview.length" :rgba="preview.rgba" :style="style"/>
                     <Slider v-else-if="preview !== null && preview.type_name == 'Slider'" 
                         :x="w * preview.x" :y="h * preview.y" :value="preview.value" :style="style"/>
                   <!-- TODO: fix empty list error, check slides.length before accessing component -->
@@ -158,12 +158,12 @@
                         </div>
                         <div v-else-if="c.type_name === 'Circle'" draggable v-on:click="widgetClicked($event, c.s_id, c.c_id)"
                             v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
-                            <MyCircle :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :radius="c.radius" 
+                            <MyCircle :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :radius="c.radius" :rgba="c.rgba"
                                 :style="style" :glow="glow(c.c_id)" :glow_color="glow_color(c.c_id)" :focus="is_focus(c.c_id)"/>
                         </div>
                         <div v-else-if="c.type_name == 'Rectangle'" draggable v-on:click="widgetClicked($event, c.s_id, c.c_id)"
                             v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
-                            <MyRect :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :width="c.width" :length="c.length" 
+                            <MyRect :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :width="c.width" :length="c.length" :rgba="c.rgba"
                                 :style="style" :glow="glow(c.c_id)" :glow_color="glow_color(c.c_id)" :focus="is_focus(c.c_id)"/>
                         </div>
                         <div v-else-if="c.type_name == 'Slider'" draggable v-on:click="widgetClicked($event, c.s_id, c.c_id)"
@@ -224,6 +224,7 @@ export default {
         signals: [],
         slots: [],
         focus: '',
+        default_color: {r: 0, g: 100, b: 255, a: 0.75},
 
         // Dragging elements state
         preview: null,
@@ -438,7 +439,7 @@ export default {
             this.signals = this.compute_signals()
             this.slot = ""
             this.slots = this.compute_slots()
-        },
+        },    
         toggle() {
             this.$refs['fullscreen'].toggle()
         },
@@ -460,9 +461,9 @@ export default {
             if (widget === 'textbox') {
                 this.preview = new TextWidget(-1, this.curr_slide_id, 0, 0, "Text");
             } else if (widget === 'circle') {
-                this.preview = new CircleWidget(-1, this.curr_slide_id, 0, 0, 25)
+                this.preview = new CircleWidget(-1, this.curr_slide_id, 0, 0, 25, this.default_color)
             } else if (widget === 'rectangle') {
-                this.preview = new RectWidget(-1, this.curr_slide_id, 0, 0, 50, 50)
+                this.preview = new RectWidget(-1, this.curr_slide_id, 0, 0, 50, 50, this.default_color)
             } else if (widget === 'slider') {
                 this.preview = new SliderWidget(-1, this.curr_slide_id, 0, 0, 50)
             } else {

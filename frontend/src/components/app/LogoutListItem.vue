@@ -24,6 +24,7 @@ export default {
         // this.$store.getters.uid === null
         // TODO: full clear store to default value instead of value by value
         this.$store.commit('set_uid', null)
+        sessionStorage.clear()
     }
 }
 </script>

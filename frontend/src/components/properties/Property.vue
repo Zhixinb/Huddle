@@ -11,41 +11,58 @@
         </v-icon>
     </v-btn>
     <h3 :style="{'color': index === 0 ? 'steelblue' : 'red'}">{{type}}</h3>
-    <v-text-field v-if="type=='Circle' || type=='Rectangle' || type=='Textbox' || type=='Slider' "
-        v-model="prop.x"
-        label="X"
-        v-on:input="prop_changed('x', Number($event))"
-    ></v-text-field>
-    <v-text-field v-if="type=='Circle' || type=='Rectangle' || type=='Textbox' || type=='Slider' "
-        v-model="prop.y"
-        label="Y"
-        v-on:input="prop_changed('y', Number($event))"
-    ></v-text-field>
-    <v-text-field v-if="type=='Circle'"
-        v-model="prop.radius"
-        label="Radius"
-        v-on:input="prop_changed('radius', Number($event))"
-    ></v-text-field>
-    <v-text-field v-if="type=='Rectangle'"
-        v-model="prop.width"
-        label="Width"
-        v-on:input="prop_changed('width', Number($event))"
-    ></v-text-field>
-    <v-text-field v-if="type=='Rectangle'"
-        v-model="prop.length"
-        label="Length"
-        v-on:input="prop_changed('length', Number($event))"
-    ></v-text-field>
-    <v-text-field v-if="type=='Textbox'"
-        v-model="prop.text"
-        label="Text"
-        v-on:input="prop_changed('text', String($event))"
-    ></v-text-field>
-    <v-text-field v-if="type=='Slider'"
-        v-model="prop.value"
-        label="Value"
-        v-on:input="prop_changed('value', Number($event))"
-    ></v-text-field>
+
+    <v-expansion-panels accordion>
+        <v-expansion-panel class="elevation-0">
+            <v-expansion-panel-header> Position </v-expansion-panel-header>
+            <v-expansion-panel-content>
+                <v-text-field v-if="type=='Circle' || type=='Rectangle' || type=='Textbox' || type=='Slider' "
+                    v-model="prop.x"
+                    label="X"
+                    v-on:input="property_changed('x', Number($event))"
+                ></v-text-field>
+                <v-text-field v-if="type=='Circle' || type=='Rectangle' || type=='Textbox' || type=='Slider' "
+                    v-model="prop.y"
+                    label="Y"
+                    v-on:input="property_changed('y', Number($event))"
+                ></v-text-field>
+            </v-expansion-panel-content>
+        </v-expansion-panel>
+        <v-expansion-panel class="elevation-0">
+            <v-expansion-panel-header> Properties </v-expansion-panel-header>
+            <v-expansion-panel-content>                
+                <v-text-field v-if="type=='Circle'"
+                    v-model="prop.radius"
+                    label="Radius"
+                    v-on:input="property_changed('radius', Number($event))"
+                ></v-text-field>
+                <v-text-field v-if="type=='Rectangle'"
+                    v-model="prop.width"
+                    label="Width"
+                    v-on:input="property_changed('width', Number($event))"
+                ></v-text-field>
+                <v-text-field v-if="type=='Rectangle'"
+                    v-model="prop.length"
+                    label="Length"
+                    v-on:input="property_changed('length', Number($event))"
+                ></v-text-field>
+                <v-text-field v-if="type=='Textbox'"
+                    v-model="prop.text"
+                    label="Text"
+                    v-on:input="property_changed('text', String($event))"
+                ></v-text-field>
+                <v-text-field v-if="type=='Slider'"
+                    v-model="prop.value"
+                    label="Value"
+                    v-on:input="property_changed('value', Number($event))"
+                ></v-text-field>
+
+                <color-picker-modal :c_id="c_id" :s_id="s_id" :rgba="prop.rgba"
+                @property_changed="property_changed('rgba', $event)" />
+            </v-expansion-panel-content>
+        </v-expansion-panel>
+    </v-expansion-panels>
+        
     <v-select v-if="index === 0"
         v-model="selectedSignal"
         :items="items"
@@ -63,9 +80,13 @@
 </template>
 
 <script>
+import ColorPickerModal from '../app/ColorPickerModal.vue'
 
 export default {
     name: 'Property',
+    components: {
+        ColorPickerModal
+    },
     props: {
         index: Number,
         type: String,
@@ -82,7 +103,7 @@ export default {
         }
     },
     methods: {
-        prop_changed(key, value) {
+        property_changed(key, value) {
             this.$emit('property_changed', {c_id: this.c_id, s_id: this.s_id, key: key, value: value})
         },
         selected_signal(event) {
@@ -93,6 +114,9 @@ export default {
         },
         deselect() {
             this.$emit('deselect_clicked', this.index)
+        },
+        colorPicker(currColor) {
+            this.$emit('open_editor', {editor: "colorPicker", c_id: this.c_id, s_id: this.s_id, rgba:currColor})
         }
     }
 
