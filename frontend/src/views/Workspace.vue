@@ -152,7 +152,7 @@
              <span>Fullscreen</span>
         </v-tooltip>
         <permission-modal/>
-        <user-dropdown></user-dropdown>
+        <user-dropdown :isWorkspace="true"></user-dropdown>
     </v-app-bar>
    
     <div class="pa-5">

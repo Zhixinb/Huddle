@@ -22,9 +22,9 @@
                 <v-list-item-title>User: {{email}}</v-list-item-title>
             </v-list-item>
           <logout-list-item></logout-list-item>      
-          <hotkey-menu></hotkey-menu>
-          <download-list-item> </download-list-item>
-          <upload-menu></upload-menu>
+          <hotkey-menu v-if="isWorkspace"></hotkey-menu>
+          <download-list-item v-if="isWorkspace"> </download-list-item>
+          <upload-menu v-if="isWorkspace"></upload-menu>
         </v-list>
       </v-menu>
   </v-container>
@@ -46,7 +46,17 @@ export default {
     },
     computed: {
         ...mapState(['email'])
-    }
+    },
+    props: {     
+        isWorkspace: {
+            type: Boolean
+        }
+    },
+    data () {
+      return {
+        isWorkspace: this.isWorkspace,
+      }
+    },
 }
 </script>
 
