@@ -66,6 +66,13 @@ class Workspace(object):
         else:
             return self.global_share_state
     
+    def remove_user_perm(self, uid):
+        if uid in self.user_perms and (self.user_perms[uid] is not Permission.OWNER):
+            self.user_perms.pop(uid, None)
+            return True
+        else:
+            return False
+    
     def get_role(self, uid):
         perm = self.get_user_perm(uid)
         return Permission(perm).name

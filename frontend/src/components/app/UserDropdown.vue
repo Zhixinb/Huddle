@@ -22,9 +22,9 @@
                 <v-list-item-title>User: {{email}}</v-list-item-title>
             </v-list-item>
           <logout-list-item></logout-list-item>      
-          <hotkey-menu v-if="isWorkspace"></hotkey-menu>
-          <download-list-item v-if="isWorkspace"> </download-list-item>
-          <upload-menu v-if="isWorkspace"></upload-menu>
+          <hotkey-menu v-if="showWorkspaceDropdowns"></hotkey-menu>
+          <download-list-item v-if="showWorkspaceDropdowns"> </download-list-item>
+          <upload-menu v-if="showWorkspaceDropdowns"></upload-menu>
         </v-list>
       </v-menu>
   </v-container>
@@ -54,7 +54,7 @@ export default {
     },
     data () {
       return {
-        isWorkspace: this.isWorkspace,
+        showWorkspaceDropdowns: this.isWorkspace,
       }
     },
 }

@@ -353,6 +353,36 @@ def on_upload_json(data):
     else:
         emit('error', {'error': 'Unable to upload json file'})
 
+# If user is the owner, then room is deleted from memory and db, else user is removed from the room's access
+@socketio.on('deleteWorkspace')
+def on_delete_workspace(data):
+    uid = data['uid']
+    room = data['room']
+
+    if room in ROOMS:
+        ws = ROOMS[room]
+        perm = ws.get_user_perm(uid)
+        
+        if perm is Permission.OWNER:
+            # remove the room from ROOMS, ROUTERS, and DB
+            ROOMS.pop(room, None)
+            ROUTERS.pop(room, None)
+
+            # Deleting from DB has race condition with background scheduler for backing up ROOMS and ROUTERS to db
+            # can be avoid if removing scheduler after able to detect SIGTERM for backup only on exit, or watch dicts and backup on change
+            if IS_HEROKU:
+                db.delete(ROOM_NAMESPACE + room, ROUTER_NAMESPACE + room)
+        else:
+            # remove uid from user_perms
+            ws.remove_user_perm(uid)
+
+        user_room = [room_key for room_key,
+                 workspace in ROOMS.items() if workspace.has_access(uid)]
+        emit('created_room', {'rooms': user_room})       
+             
+    else:
+        emit('error', {'error': 'Unable to delete/remove access of workspace'})
+
 def remove_prefix(text, prefix):
     if text.startswith(prefix):
         return text[len(prefix):]

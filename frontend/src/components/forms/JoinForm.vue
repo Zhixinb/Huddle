@@ -32,7 +32,7 @@
     </v-form>
     <div class="pb-6 pr-6 pl-6">
       <h3> List of Rooms </h3>
-      <v-list rounded style="max-height: 200px" class="overflow-y-auto">
+      <v-list rounded  class="overflow-y-auto">
         <v-list-item-group color="primary">
             <v-list-item v-for="(ws_id, index) in workspace_list" :key="index" @click="clicked(ws_id)">
             <v-list-item-icon>
@@ -41,6 +41,13 @@
             <v-list-item-content>
                 <v-list-item-title>{{ ws_id }}</v-list-item-title>
             </v-list-item-content>
+
+            <v-btn                        
+              v-on:click.stop="deleteWorkspace(ws_id)"  
+              icon 
+            >
+              <v-icon>mdi-trash-can-outline</v-icon>
+            </v-btn>
             </v-list-item>
         </v-list-item-group>
         </v-list>
@@ -99,6 +106,13 @@ export default {
     },
     clicked(ws_id) {
         this.curr_room_id = ws_id;
+    },
+    deleteWorkspace(ws_id) {
+      const params = {
+          uid: this.$store.getters.uid,
+          room: ws_id
+        }
+      this.$socket.emit('deleteWorkspace', params)
     }
   },
   sockets: {
