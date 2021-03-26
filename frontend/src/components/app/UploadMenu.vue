@@ -51,7 +51,7 @@ export default {
     onClick () {
     },
     onUploadFiles: function(file) {
-        console.log(file)
+        // console.log(file)
         const params = {
                 uid: this.$store.getters.uid,
                 room: this.$store.getters.room,

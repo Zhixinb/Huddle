@@ -269,7 +269,7 @@ export default {
             }
         });
         if (this.$store.getters.uid === null) {
-            console.log("user not logged in")
+            console.log("User not logged in")
             this.redirectToLogin();
         }
 

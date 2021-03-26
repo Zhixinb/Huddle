@@ -77,7 +77,7 @@ export default ({
   actions: {
     WS_share_state_result (context, message) {
       context.commit('set_whitelist', message.whitelist)
-      console.log('whitelist:' + JSON.stringify(message.whitelist))
+      // console.log('whitelist:' + JSON.stringify(message.whitelist))
       
       context.commit('set_global_share_state', message.global_share_state)
       
@@ -92,7 +92,7 @@ export default ({
     },
     WS_update_whitelist_result (context, message) {
       context.commit('set_whitelist', message.whitelist)
-      console.log('whitelist:' + JSON.stringify(message.whitelist))
+      // console.log('whitelist:' + JSON.stringify(message.whitelist))
       context.commit('set_global_share_state', message.global_share_state)
       context.commit('set_permission_map', message.permission_map)
       

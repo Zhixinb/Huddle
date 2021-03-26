@@ -32,7 +32,7 @@
     </v-form>
     <div class="pb-6 pr-6 pl-6">
       <h3> List of Rooms </h3>
-      <v-list rounded  class="overflow-y-auto">
+      <v-list rounded style="max-height: 200px" class="overflow-y-auto">
         <v-list-item-group color="primary">
             <v-list-item v-for="(ws_id, index) in workspace_list" :key="index" @click="clicked(ws_id)">
             <v-list-item-icon>

@@ -33,6 +33,10 @@ ROUTER_NAMESPACE = 'ROUTER/'
 ROOMS = {}  # dict to track active workspaces
 ROUTERS = {}  # dict to track routers
 
+def get_user_rooms(rooms, uid):
+    return [room_key for room_key,
+                 workspace in rooms.items() if workspace.has_access(uid)]
+
 @socketio.on('create')
 def on_create(data):
     """Create a workspace"""
@@ -42,8 +46,7 @@ def on_create(data):
     ROOMS[room] = ws
     ROUTERS[room] = Router()
     join_room(room)
-    user_room = [room_key for room_key,
-                 workspace in ROOMS.items() if workspace.has_access(uid)]
+    user_room = get_user_rooms(ROOMS, uid)
     emit('created_room', {'rooms': user_room})
 
     # Debug
@@ -55,8 +58,7 @@ def on_create(data):
 @socketio.on('get_rooms')
 def on_get_rooms(data):
     uid = data['uid']
-    user_room = [room_key for room_key,
-                 workspace in ROOMS.items() if workspace.has_access(uid)]
+    user_room = get_user_rooms(ROOMS, uid)
     emit('created_room', {'rooms': user_room})
 
 @socketio.on('join')
@@ -376,8 +378,7 @@ def on_delete_workspace(data):
             # remove uid from user_perms
             ws.remove_user_perm(uid)
 
-        user_room = [room_key for room_key,
-                 workspace in ROOMS.items() if workspace.has_access(uid)]
+        user_room = get_user_rooms(ROOMS, uid)
         emit('created_room', {'rooms': user_room})       
              
     else:
@@ -413,8 +414,8 @@ def load_from_db():
             elif key.startswith(ROUTER_NAMESPACE):
                 room = remove_prefix(key, ROUTER_NAMESPACE)
                 ROUTERS[room] = pickle.loads(db.get(key))     
-        print("loading -- ROOMS:" + str(ROOMS))
-        print("loading -- ROUTERS:" + str(ROUTERS))
+        # print("loading -- ROOMS:" + str(ROOMS))
+        # print("loading -- ROUTERS:" + str(ROUTERS))
 
 if __name__ == '__main__':
     # currently no way to detect SIGNTERM or SIGKILL from Heroku when dyno restarts during redeployment

@@ -130,7 +130,7 @@ export default {
           listing: listing,
           action: 'add'
         }
-        console.log("perm to send for updating whitelist:" + JSON.stringify(params))
+        // console.log("perm to send for updating whitelist:" + JSON.stringify(params))
         this.$socket.emit('update_whitelist', params)
         dbHelper.logMetric("PermissionAdded")
         this.new_uid = '' // clear input        

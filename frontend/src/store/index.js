@@ -108,7 +108,7 @@ export default new Vuex.Store({
     WS_created_room (context, message) {
       context.commit('reset_error')
       context.commit('set_workspace_list', message.rooms)
-      console.log('room:' + JSON.stringify(message.rooms))
+      // console.log('room:' + JSON.stringify(message.rooms))
     },
     WS_join_room (context, message) {
       context.commit('reset_error')
