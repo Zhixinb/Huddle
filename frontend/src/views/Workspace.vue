@@ -266,7 +266,7 @@ export default {
         scale: 1,
         fields: [],
         count: 0,
-        image_loaded: false,
+        last_slide: 0,
 
         expression: '',
         signal: '',
@@ -297,22 +297,50 @@ export default {
             e.stopImmediatePropagation()
             
             if (e.key === 'ArrowLeft') {
-                if (this.curr_slide_id != '0') {
-                    //console.log(this.curr_slide_id)
-                    var slide_id_int = parseInt(this.curr_slide_id)
-                    slide_id_int = slide_id_int - 1
-                    this.update_slide('' + slide_id_int)
+                var first_s_id = '-1';
+                var slide_before_curr;
+                for (const key in this.slides) {
+                    first_s_id = key;
+                    break;
+                }
+
+                for (const key in this.slides) {
+                    if (key == this.curr_slide_id) {
+                        break;
+                    }
+                    slide_before_curr = key;
+                }
+
+                if (this.curr_slide_id != first_s_id && first_s_id != '-1') {
+                    this.update_slide(slide_before_curr)
                 }
             }
 
             if (e.key === 'ArrowRight') {
                 // console.log(this.curr_slide_id)
-                if (this.curr_slide_id != ('' + (Object.keys(this.slides).length - 1))) {
-                    //console.log(this.curr_slide_id)
-                    var slide_id_int = parseInt(this.curr_slide_id)
-                    slide_id_int = slide_id_int + 1
-                    this.update_slide('' + slide_id_int)
+                var last_s_id = '-1';
+                var slide_after_curr;
+                for (const key in this.slides) {
+                    if (last_s_id == this.curr_slide_id) {
+                        slide_after_curr = key
+                    }
+                    last_s_id = key
                 }
+                //console.log(this.slides)
+
+                if (this.curr_slide_id != last_s_id && last_s_id != '-1') {
+                    this.update_slide(slide_after_curr)
+                }
+            }
+
+            if (e.key === 'F2') {
+                var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.slides));
+                var downloadAnchorNode = document.createElement('a');
+                downloadAnchorNode.setAttribute("href",     dataStr);
+                downloadAnchorNode.setAttribute("download", "slides_data.json");
+                document.body.appendChild(downloadAnchorNode); // required for firefox
+                downloadAnchorNode.click();
+                downloadAnchorNode.remove();
             }
         });
         if (this.$store.getters.uid === null) {
@@ -354,6 +382,7 @@ export default {
             this.set_selected_widgets([])
         },
         append_slide() {
+            this.last_slide++
             const params = {
                 uid: this.$store.getters.uid,
                 room: this.$store.getters.room,
@@ -649,14 +678,9 @@ export default {
         on_image_input(file) {
             //event.dataTransfer.setDragImage(document.createElement('div'), 0, 0);
             if (file) {
-                var reader = new FileReader()
-                
                 var img_data = URL.createObjectURL(file);
                 console.log(img_data)
-                // convert image file to base64 string
-                //preview.src = reader.result;
-                //img_data = reader.result
-                //read_image_data(reader.result)
+
                 this.preview = new ImageWidget(-1, this.curr_slide_id, 0.26, 0.18, img_data, 50, 50)
                 if (this.preview != null) {
                     const params = {
@@ -668,78 +692,8 @@ export default {
                     dbHelper.logMetric("ComponentCreated")
                 }
                 this.preview = null;
-
-                
-                // reader.onload = function(event) {
-                //     url = event.target.result
-                // }
-
-                // reader.addEventListener("load", function (context) {
-                //     // convert image file to base64 string
-                //     //preview.src = reader.result;
-                //     //img_data = reader.result
-                //     //read_image_data(reader.result)
-                //     console.log(reader.result)
-                //     context.preview = new ImageWidget(-1, context.curr_slide_id, 0.26, 0.18, reader.result, 50, 50)
-                //     if (context.preview != null) {
-                //         const params = {
-                //             uid: context.$store.getters.uid,
-                //             room: context.$store.getters.room,
-                //             component: context.preview
-                //         }
-                //         context.$socket.emit('new_component', params)
-                //         dbHelper.logMetric("ComponentCreated")
-                //     }
-                //     context.preview = null;
-                //     console.log("2")
-                // }(this), false);
-
-                // reader.onload = function (e, context) {
-                //     // convert image file to base64 string
-                //     //preview.src = reader.result;
-                //     //img_data = reader.result
-                //     //read_image_data(reader.result)
-                //     console.log(reader.result)
-                //     context.preview = new ImageWidget(-1, context.curr_slide_id, 0.26, 0.18, reader.result, 50, 50)
-                //     if (context.preview != null) {
-                //         const params = {
-                //             uid: context.$store.getters.uid,
-                //             room: context.$store.getters.room,
-                //             component: context.preview
-                //         }
-                //         context.$socket.emit('new_component', params)
-                //         dbHelper.logMetric("ComponentCreated")
-                //     }
-                //     context.preview = null;
-                //     console.log("2")
-                // }(this)
-
-                if (file) {
-                    //reader.readAsDataURL(file);
-                    console.log("1")
-                    
-                }
-                //var url = reader.readAsDataURL(file)
-                // console.log(file[0])
-                // var url = URL.createObjectURL(file[0])
-                // console.log(url)
-
-                
             }
 
-        },
-        read_image_data(img_data) {
-            this.preview = new ImageWidget(-1, this.curr_slide_id, 0.26, 0.18, img_data, 50, 50)
-            if (this.preview != null) {
-                const params = {
-                    uid: this.$store.getters.uid,
-                    room: this.$store.getters.room,
-                    component: this.preview
-                }
-                this.$socket.emit('new_component', params)
-                dbHelper.logMetric("ComponentCreated")
-            }
-            this.preview = null;
         },
         async redirectToLogin() {
             this.$router.push({ name: 'Login'})

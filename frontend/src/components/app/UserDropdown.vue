@@ -22,7 +22,6 @@
                 <v-list-item-title>User: {{email}}</v-list-item-title>
             </v-list-item>
           <logout-list-item></logout-list-item>      
-          <hotkey-menu></hotkey-menu>
           <download-list-item> </download-list-item>
           <upload-menu></upload-menu>
         </v-list>
