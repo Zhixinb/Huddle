@@ -266,6 +266,7 @@ export default {
         scale: 1,
         fields: [],
         count: 0,
+        image_loaded: false,
 
         expression: '',
         signal: '',
@@ -649,17 +650,14 @@ export default {
             //event.dataTransfer.setDragImage(document.createElement('div'), 0, 0);
             if (file) {
                 var reader = new FileReader()
-                var url = ''
                 
-                reader.onload = function(event) {
-                    url = event.target.result
-                }
-                //var url = reader.readAsDataURL(file)
-                // console.log(file[0])
-                // var url = URL.createObjectURL(file[0])
-                // console.log(url)
-
-                this.preview = new ImageWidget(-1, this.curr_slide_id, 0.26, 0.18, "https://cdn.vuetifyjs.com/images/parallax/material.jpg", 50, 50)
+                var img_data = URL.createObjectURL(file);
+                console.log(img_data)
+                // convert image file to base64 string
+                //preview.src = reader.result;
+                //img_data = reader.result
+                //read_image_data(reader.result)
+                this.preview = new ImageWidget(-1, this.curr_slide_id, 0.26, 0.18, img_data, 50, 50)
                 if (this.preview != null) {
                     const params = {
                         uid: this.$store.getters.uid,
@@ -670,8 +668,78 @@ export default {
                     dbHelper.logMetric("ComponentCreated")
                 }
                 this.preview = null;
+
+                
+                // reader.onload = function(event) {
+                //     url = event.target.result
+                // }
+
+                // reader.addEventListener("load", function (context) {
+                //     // convert image file to base64 string
+                //     //preview.src = reader.result;
+                //     //img_data = reader.result
+                //     //read_image_data(reader.result)
+                //     console.log(reader.result)
+                //     context.preview = new ImageWidget(-1, context.curr_slide_id, 0.26, 0.18, reader.result, 50, 50)
+                //     if (context.preview != null) {
+                //         const params = {
+                //             uid: context.$store.getters.uid,
+                //             room: context.$store.getters.room,
+                //             component: context.preview
+                //         }
+                //         context.$socket.emit('new_component', params)
+                //         dbHelper.logMetric("ComponentCreated")
+                //     }
+                //     context.preview = null;
+                //     console.log("2")
+                // }(this), false);
+
+                // reader.onload = function (e, context) {
+                //     // convert image file to base64 string
+                //     //preview.src = reader.result;
+                //     //img_data = reader.result
+                //     //read_image_data(reader.result)
+                //     console.log(reader.result)
+                //     context.preview = new ImageWidget(-1, context.curr_slide_id, 0.26, 0.18, reader.result, 50, 50)
+                //     if (context.preview != null) {
+                //         const params = {
+                //             uid: context.$store.getters.uid,
+                //             room: context.$store.getters.room,
+                //             component: context.preview
+                //         }
+                //         context.$socket.emit('new_component', params)
+                //         dbHelper.logMetric("ComponentCreated")
+                //     }
+                //     context.preview = null;
+                //     console.log("2")
+                // }(this)
+
+                if (file) {
+                    //reader.readAsDataURL(file);
+                    console.log("1")
+                    
+                }
+                //var url = reader.readAsDataURL(file)
+                // console.log(file[0])
+                // var url = URL.createObjectURL(file[0])
+                // console.log(url)
+
+                
             }
 
+        },
+        read_image_data(img_data) {
+            this.preview = new ImageWidget(-1, this.curr_slide_id, 0.26, 0.18, img_data, 50, 50)
+            if (this.preview != null) {
+                const params = {
+                    uid: this.$store.getters.uid,
+                    room: this.$store.getters.room,
+                    component: this.preview
+                }
+                this.$socket.emit('new_component', params)
+                dbHelper.logMetric("ComponentCreated")
+            }
+            this.preview = null;
         },
         async redirectToLogin() {
             this.$router.push({ name: 'Login'})
