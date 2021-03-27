@@ -16,12 +16,12 @@
         <v-expansion-panel class="elevation-0">
             <v-expansion-panel-header> Position </v-expansion-panel-header>
             <v-expansion-panel-content>
-                <v-text-field v-if="type=='Circle' || type=='Rectangle' || type=='Textbox' || type=='Slider' "
+                <v-text-field v-if="type=='Circle' || type=='Rectangle' || type=='Image' || type=='Textbox' || type=='Slider' "
                     v-model="prop.x"
                     label="X"
                     v-on:input="property_changed('x', Number($event))"
                 ></v-text-field>
-                <v-text-field v-if="type=='Circle' || type=='Rectangle' || type=='Textbox' || type=='Slider' "
+                <v-text-field v-if="type=='Circle' || type=='Rectangle' || type=='Image' ||  type=='Textbox' || type=='Slider' "
                     v-model="prop.y"
                     label="Y"
                     v-on:input="property_changed('y', Number($event))"
@@ -36,12 +36,12 @@
                     label="Radius"
                     v-on:input="property_changed('radius', Number($event))"
                 ></v-text-field>
-                <v-text-field v-if="type=='Rectangle'"
+                <v-text-field v-if="type=='Rectangle' || type=='Image'"
                     v-model="prop.width"
                     label="Width"
                     v-on:input="property_changed('width', Number($event))"
                 ></v-text-field>
-                <v-text-field v-if="type=='Rectangle'"
+                <v-text-field v-if="type=='Rectangle' || type=='Image'"
                     v-model="prop.length"
                     label="Length"
                     v-on:input="property_changed('length', Number($event))"
@@ -56,7 +56,7 @@
                     v-on:input="property_changed('value', Number($event))"
                 ></v-text-field>
 
-                <color-picker-modal :rgba="prop.rgba"
+                <color-picker-modal v-if="type=='Rectangle' || type=='Circle'" :rgba="prop.rgba"
                 @property_changed="property_changed('rgba', $event)" />
             </v-expansion-panel-content>
         </v-expansion-panel>

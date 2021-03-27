@@ -22,7 +22,6 @@
                 <v-list-item-title>User: {{email}}</v-list-item-title>
             </v-list-item>
           <logout-list-item></logout-list-item>      
-          <hotkey-menu v-if="showWorkspaceDropdowns"></hotkey-menu>
           <download-list-item v-if="showWorkspaceDropdowns"> </download-list-item>
           <upload-menu v-if="showWorkspaceDropdowns"></upload-menu>
         </v-list>

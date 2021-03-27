@@ -108,6 +108,47 @@
              </template>
              <span>New Circle</span>
         </v-tooltip>
+        <template>
+            
+            <v-dialog
+            v-model="dialog"
+            persistent
+            max-width="400"
+            >
+            
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn icon v-bind="attrs" v-on="on" id="image" :disabled='!can_share'>
+                        <v-icon>mdi-image</v-icon>
+                    </v-btn>
+                </template>
+                
+                <v-card class='pa-4 mx-auto'>
+                        <v-card-title class="headline">
+                        Upload Image File
+                        </v-card-title>
+
+
+                        <v-file-input
+                        truncate-length="15"
+                        accept='.jpg, .jpeg, .png'
+                        label='File input'
+                        @change="on_image_input"
+                        ></v-file-input>
+
+                        <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                            color="green darken-1"
+                            text
+                            @click="dialog = false"
+                        >
+                            Done
+                        </v-btn>
+                        </v-card-actions>
+                    </v-card>
+            
+            </v-dialog>
+        </template>
         <v-tooltip bottom>
              <template v-slot:activator="{ on, attrs }">
                 <v-btn icon v-bind="attrs" v-on="on" id="textbox" draggable v-on:dragstart="dragStart" v-on:dragend="dragEnd" :disabled='!can_share'>
@@ -155,6 +196,8 @@
                         :x="w * preview.x" :y="h * preview.y" :radius="preview.radius" :rgba="preview.rgba" :style="style"/>
                     <MyRect v-else-if="preview !== null && preview.type_name == 'Rectangle'" 
                         :x="w * preview.x" :y="h * preview.y" :width="preview.width" :length="preview.length" :rgba="preview.rgba" :style="style"/>
+                    <MyImage v-else-if="preview !== null && preview.type_name == 'Image'" 
+                        :x="w * preview.x" :y="h * preview.y" :src="preview.src" :width="preview.width" :length="preview.length" :style="style"/>
                     <Slider v-else-if="preview !== null && preview.type_name == 'Slider'" 
                         :x="w * preview.x" :y="h * preview.y" :value="preview.value" :style="style"/>
                   <!-- TODO: fix empty list error, check slides.length before accessing component -->
@@ -175,6 +218,11 @@
                         <div v-else-if="c.type_name == 'Rectangle'" draggable v-on:click="widgetClicked($event, c.s_id, c.c_id)"
                             v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
                             <MyRect :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :width="c.width" :length="c.length" :rgba="c.rgba"
+                                :style="style" :glow="glow(c.c_id)" :glow_color="glow_color(c.c_id)" :focus="is_focus(c.c_id)"/>
+                        </div>
+                        <div v-else-if="c.type_name == 'Image'" draggable v-on:click="widgetClicked($event, c.s_id, c.c_id)"
+                            v-on:dragstart="widgetDragStart($event, c)" v-on:dragend="widgetDragEnd($event, c)">
+                            <MyImage :c_id="c.c_id" :s_id="c.s_id" :x="w * c.x" :y="h * c.y" :src="c.src" :width="c.width" :length="c.length" 
                                 :style="style" :glow="glow(c.c_id)" :glow_color="glow_color(c.c_id)" :focus="is_focus(c.c_id)"/>
                         </div>
                         <div v-else-if="c.type_name == 'Slider'" draggable v-on:click="widgetClicked($event, c.s_id, c.c_id)"
@@ -205,10 +253,11 @@ import Property from '../components/properties/Property.vue';
 import Textbox from '../components/widgets/Textbox.vue';
 import Circle from '../components/widgets/Circle.vue';
 import Rect from '../components/widgets/Rect.vue';
+import Image from '../components/widgets/Image.vue'
 import Slider from '../components/widgets/Slider.vue';
 import Line from '../components/widgets/Line.vue';
 //import FileSaver from '../plugins/FileSaver.js'
-import {Widget, Circle as CircleWidget, Rectangle as RectWidget, 
+import {Widget, Circle as CircleWidget, Rectangle as RectWidget, Image as ImageWidget,
         Textbox as TextWidget, Slider as SliderWidget} from '../models/widget.js';
 import { generate_lines } from '../utils/util.js'
 import UserDropdown from '../components/app/UserDropdown.vue';
@@ -228,6 +277,7 @@ export default {
         scale: 1,
         fields: [],
         count: 0,
+        last_slide: 0,
 
         expression: 'x',
         signal: '',
@@ -236,6 +286,7 @@ export default {
         slots: [],
         focus: '',
         default_color: {r: 0, g: 100, b: 255, a: 0.75},
+        dialog: false,
 
         // Dragging elements state
         preview: null,
@@ -266,6 +317,55 @@ export default {
                     }
                     this.$socket.emit('remove_component', params)
                 }
+            }
+
+            e.stopImmediatePropagation()
+            
+            if (e.key === 'ArrowLeft') {
+                var first_s_id = '-1';
+                var slide_before_curr;
+                for (const key in this.slides) {
+                    first_s_id = key;
+                    break;
+                }
+
+                for (const key in this.slides) {
+                    if (key == this.curr_slide_id) {
+                        break;
+                    }
+                    slide_before_curr = key;
+                }
+
+                if (this.curr_slide_id != first_s_id && first_s_id != '-1') {
+                    this.update_slide(slide_before_curr)
+                }
+            }
+
+            if (e.key === 'ArrowRight') {
+                // console.log(this.curr_slide_id)
+                var last_s_id = '-1';
+                var slide_after_curr;
+                for (const key in this.slides) {
+                    if (last_s_id == this.curr_slide_id) {
+                        slide_after_curr = key
+                    }
+                    last_s_id = key
+                }
+                //console.log(this.slides)
+
+                if (this.curr_slide_id != last_s_id && last_s_id != '-1') {
+                    this.update_slide(slide_after_curr)
+                }
+            }
+
+            if (e.key === 'F2') {
+                var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.slides));
+                var downloadAnchorNode = document.createElement('a');
+                downloadAnchorNode.setAttribute("href",     dataStr);
+                downloadAnchorNode.setAttribute("download", "slides_data.json");
+                document.body.appendChild(downloadAnchorNode); // required for firefox
+                downloadAnchorNode.click();
+                downloadAnchorNode.remove();
             }
         });
         if (this.$store.getters.uid === null) {
@@ -309,6 +409,7 @@ export default {
             this.set_lines([])
         },
         append_slide() {
+            this.last_slide++
             const params = {
                 uid: this.$store.getters.uid,
                 room: this.$store.getters.room,
@@ -495,7 +596,8 @@ export default {
                 this.preview = new RectWidget(-1, this.curr_slide_id, 0, 0, 50, 50, this.default_color)
             } else if (widget === 'slider') {
                 this.preview = new SliderWidget(-1, this.curr_slide_id, 0, 0, 50)
-            } else {
+            }
+            else {
                 this.preview = null;
             }
         },
@@ -613,6 +715,26 @@ export default {
             const bc = this.slides[this.curr_slide_id]["backward_connections"][slot_c_id]
             return bc !== undefined && this.slot in bc && (bc[this.slot][0] === signal_c_id && bc[this.slot][1] === this.signal)
         },
+        on_image_input(file) {
+            //event.dataTransfer.setDragImage(document.createElement('div'), 0, 0);
+            if (file) {
+                var img_data = URL.createObjectURL(file);
+                console.log(img_data)
+
+                this.preview = new ImageWidget(-1, this.curr_slide_id, 0.26, 0.18, img_data, 50, 50)
+                if (this.preview != null) {
+                    const params = {
+                        uid: this.$store.getters.uid,
+                        room: this.$store.getters.room,
+                        component: this.preview
+                    }
+                    this.$socket.emit('new_component', params)
+                    dbHelper.logMetric("ComponentCreated")
+                }
+                this.preview = null;
+            }
+
+        },
         async redirectToLogin() {
             this.$router.push({ name: 'Login'})
         }
@@ -622,6 +744,7 @@ export default {
         Textbox,
         'MyCircle': Circle,
         'MyRect': Rect,
+        'MyImage': Image,
         Slider,
         'MyLine': Line,
         PermissionModal,
