@@ -372,7 +372,10 @@ export default {
             console.log("User not logged in")
             this.redirectToLogin();
         }
-
+        
+        //please dont remove this line
+        //it is needed to fix a bug where you cant add components on first launch without selecting the slide first on the slide deck
+        this.update_slide('0')
         dbHelper.logMetric(this.$options.name)
     },
     beforeMount () {
